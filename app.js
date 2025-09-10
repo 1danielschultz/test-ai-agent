@@ -38,24 +38,32 @@ class QuickBooksAI {
 
     async initializeBrowserAI() {
         try {
-            // Initialize browser-based AI
-            this.aiBrain = new AIBrain();
+            // Try to initialize SmolLM2-135M-Instruct first
+            this.aiBrain = new SmolLMBrain();
             
-            // Show loading message
-            this.addMessage("🧠 Initializing AI model... This may take 1-2 minutes on first visit.", false);
+            // Show loading message with model info
+            this.addMessage("🧠 Loading SmolLM2-135M-Instruct (95MB)... This provides much better AI responses than the previous model!", false);
             
             // Start loading the model
             const success = await this.aiBrain.initialize();
             
             if (success) {
-                this.addMessage("✅ AI model ready! I can now provide intelligent QuickBooks assistance.", false);
+                const modelInfo = this.aiBrain.getModelInfo();
+                this.addMessage(`✅ SmolLM2 ready! Now running ${modelInfo.params} instruction-tuned model for superior QuickBooks assistance.`, false);
             } else {
-                this.addMessage("⚠️ AI model couldn't load, but I can still help with rule-based responses.", false);
+                // Fallback to rule-based system
+                console.log('Falling back to rule-based responses');
+                this.aiBrain = new FallbackBrain();
+                await this.aiBrain.initialize();
+                this.addMessage("⚠️ Advanced AI unavailable, using enhanced rule-based QuickBooks assistance.", false);
             }
             
         } catch (error) {
-            console.error('Failed to initialize AI:', error);
-            this.addMessage("ℹ️ Running in basic mode. I can help with common QuickBooks questions.", false);
+            console.error('Failed to initialize SmolLM2:', error);
+            // Initialize fallback system
+            this.aiBrain = new FallbackBrain();
+            await this.aiBrain.initialize();
+            this.addMessage("ℹ️ Running in rule-based mode with comprehensive QuickBooks knowledge.", false);
         }
     }
 

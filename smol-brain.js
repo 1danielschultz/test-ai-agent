@@ -1,0 +1,269 @@
+// SmolLM2-135M Brain - WebAssembly LLM for QuickBooks Assistant
+// Uses llama.cpp WASM for efficient inference
+
+class SmolLMBrain {
+    constructor() {
+        this.isLoading = false;
+        this.isReady = false;
+        this.llamaCpp = null;
+        this.model = null;
+        this.modelUrl = 'https://huggingface.co/lmstudio-community/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q8_0.gguf';
+    }
+
+    async initialize() {
+        if (this.isLoading || this.isReady) return this.isReady;
+        
+        try {
+            this.isLoading = true;
+            console.log('🧠 Loading SmolLM2-135M-Instruct...');
+            
+            // Load llama.cpp WASM
+            await this.loadLlamaCppWasm();
+            
+            // Download and load the model
+            await this.loadModel();
+            
+            this.isReady = true;
+            this.isLoading = false;
+            
+            console.log('✅ SmolLM2 ready for inference!');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Failed to load SmolLM2:', error);
+            this.isLoading = false;
+            return false;
+        }
+    }
+
+    async loadLlamaCppWasm() {
+        // Use llamafile WASM build - a single-file distribution
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@llamafile/llamafile@0.8.6/llamafile.js';
+        
+        return new Promise((resolve, reject) => {
+            script.onload = () => {
+                this.llamaCpp = window.llamafile;
+                resolve();
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    async loadModel() {
+        console.log('📥 Downloading SmolLM2 model (95MB)...');
+        
+        // Download model with progress tracking
+        const response = await fetch(this.modelUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to download model: ${response.statusText}`);
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        let loaded = 0;
+
+        const reader = response.body.getReader();
+        const chunks = [];
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            chunks.push(value);
+            loaded += value.length;
+            
+            if (total > 0) {
+                const progress = Math.round((loaded / total) * 100);
+                console.log(`📥 Download progress: ${progress}%`);
+            }
+        }
+
+        // Combine chunks into single array buffer
+        const modelData = new Uint8Array(loaded);
+        let offset = 0;
+        for (const chunk of chunks) {
+            modelData.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        console.log('🔄 Initializing model...');
+        
+        // Initialize llama.cpp with model data
+        this.model = await this.llamaCpp.loadModel(modelData, {
+            threads: navigator.hardwareConcurrency || 4,
+            contextSize: 2048,
+            batchSize: 512
+        });
+    }
+
+    async generateResponse(userMessage) {
+        if (!this.isReady || !this.model) {
+            return {
+                success: false,
+                message: "🤖 SmolLM2 model is still loading. Please wait..."
+            };
+        }
+
+        try {
+            // Create instruction-tuned prompt for QuickBooks assistance
+            const systemPrompt = "You are a helpful QuickBooks Online assistant. Provide accurate, step-by-step guidance for QuickBooks tasks. Keep responses concise and actionable.";
+            
+            const prompt = `<|im_start|>system
+${systemPrompt}<|im_end|>
+<|im_start|>user
+${userMessage}<|im_end|>
+<|im_start|>assistant
+`;
+
+            const response = await this.model.generate(prompt, {
+                maxTokens: 150,
+                temperature: 0.7,
+                topP: 0.9,
+                stopSequences: ['<|im_end|>', '<|im_start|>'],
+                stream: false
+            });
+
+            let text = response.text || response;
+            
+            // Clean up the response
+            text = this.cleanResponse(text);
+            
+            // Fallback to rule-based if response is poor
+            if (text.length < 15 || this.isGenericResponse(text)) {
+                text = this.getQuickBooksGuidance(userMessage);
+            }
+
+            return {
+                success: true,
+                message: text,
+                source: 'smollm2'
+            };
+
+        } catch (error) {
+            console.error('SmolLM2 generation error:', error);
+            return {
+                success: true,
+                message: this.getQuickBooksGuidance(userMessage),
+                source: 'fallback'
+            };
+        }
+    }
+
+    cleanResponse(text) {
+        // Remove instruction tokens and clean up
+        text = text.replace(/<\|im_start\|>/g, '')
+                  .replace(/<\|im_end\|>/g, '')
+                  .replace(/^assistant\s*/i, '')
+                  .trim();
+
+        // Remove incomplete sentences at the end
+        const sentences = text.split(/[.!?]+/);
+        if (sentences.length > 1 && sentences[sentences.length - 1].trim().length < 10) {
+            sentences.pop();
+            text = sentences.join('.') + '.';
+        }
+
+        return text;
+    }
+
+    isGenericResponse(text) {
+        const genericPhrases = [
+            'I can help',
+            'I understand', 
+            'Thank you',
+            'How can I assist',
+            'I\'m here to help'
+        ];
+        
+        return genericPhrases.some(phrase => 
+            text.toLowerCase().includes(phrase.toLowerCase())
+        ) && text.length < 50;
+    }
+
+    getQuickBooksGuidance(userMessage) {
+        const message = userMessage.toLowerCase();
+        
+        // Enhanced QuickBooks knowledge base
+        if (message.includes('bank') || message.includes('connect') || message.includes('link')) {
+            return "To connect your bank to QuickBooks Online:\n\n1. Go to **Banking** → **Connect Account**\n2. Search and select your bank\n3. Enter your online banking credentials\n4. Choose accounts to sync\n5. Review and categorize transactions\n\nTroubleshooting: Ensure online banking is active and try incognito mode if connection fails.";
+        }
+        
+        if (message.includes('invoice') || message.includes('bill') || message.includes('customer')) {
+            return "Create professional invoices in QuickBooks:\n\n1. Go to **Sales** → **Invoices** → **Create Invoice**\n2. Select or add customer details\n3. Add products/services with quantities and rates\n4. Set payment terms and due date\n5. Email directly or download PDF\n\n**Pro tip**: Set up recurring invoices for regular clients under **Recurring Transactions**.";
+        }
+        
+        if (message.includes('expense') || message.includes('receipt') || message.includes('cost')) {
+            return "Track expenses efficiently:\n\n1. **Mobile**: Use QuickBooks app to photograph receipts instantly\n2. **Desktop**: Go to **Expenses** → **Add Expense**\n3. Enter vendor, amount, and category\n4. Upload receipt image\n5. Link to projects if applicable\n\n**Smart feature**: Receipt capture auto-extracts vendor, date, and amount data.";
+        }
+        
+        if (message.includes('payroll') || message.includes('employee') || message.includes('salary')) {
+            return "QuickBooks Payroll setup:\n\n1. **Upgrade**: Payroll requires subscription ($45/month + $6/employee)\n2. **Setup**: Go to **Payroll** → **Get Started**\n3. **Employees**: Add worker details, tax info, pay rates\n4. **Schedule**: Set pay frequency (weekly, bi-weekly, monthly)\n5. **Run**: Process payroll and handle tax filings automatically\n\n**Includes**: Direct deposit, tax calculations, W-2s, and compliance.";
+        }
+        
+        if (message.includes('report') || message.includes('profit') || message.includes('loss') || message.includes('financial')) {
+            return "Generate key financial reports:\n\n**Profit & Loss**: Shows income vs expenses over time\n**Balance Sheet**: Assets, liabilities, and equity snapshot\n**Cash Flow**: Track money in/out by period\n\n**Steps**: **Reports** → Search report name → Select date range → **Run Report**\n\n**Customize**: Filter by class, location, or customer for detailed analysis.";
+        }
+        
+        if (message.includes('tax') || message.includes('1099') || message.includes('deduction')) {
+            return "QuickBooks tax features:\n\n**Sales Tax**: **Taxes** → **Sales Tax** → Set up rates and track automatically\n**1099s**: **Payroll** → **Contractors** → Generate 1099-NEC forms\n**Deductions**: Categorize expenses properly for tax writeoffs\n**Export**: Send data directly to TurboTax or accountant\n\n**Year-end**: Run tax summary reports and backup your data.";
+        }
+        
+        if (message.includes('inventory') || message.includes('product') || message.includes('stock')) {
+            return "Manage inventory in QuickBooks:\n\n1. **Enable**: **Settings** → **Account & Settings** → **Sales** → Turn on inventory tracking\n2. **Add Items**: **Sales** → **Products & Services** → **New** → **Inventory**\n3. **Set Details**: SKU, cost, sale price, quantity on hand\n4. **Reorder**: Set reorder points for low stock alerts\n5. **Track**: Quantities auto-update with sales and purchases\n\n**Reports**: Use inventory reports to monitor stock levels and valuation.";
+        }
+
+        if (message.includes('error') || message.includes('problem') || message.includes('not working') || message.includes('issue')) {
+            return "QuickBooks troubleshooting steps:\n\n**Browser Issues**:\n• Clear cache and cookies\n• Try incognito/private mode\n• Disable browser extensions\n• Update browser to latest version\n\n**Sync Problems**:\n• Check internet connection\n• Update bank credentials\n• Refresh browser page\n\n**Need Help?**: Contact QuickBooks Support at **1-800-446-8848** or use in-app chat.";
+        }
+        
+        // Default comprehensive response
+        return "I'm your QuickBooks Online AI assistant! I can help with:\n\n💰 **Banking** - Connect accounts, categorize transactions\n📄 **Invoicing** - Create professional invoices, set up recurring billing\n📊 **Reports** - P&L, Balance Sheet, Cash Flow analysis\n💼 **Expenses** - Receipt capture, expense tracking, tax deductions\n👥 **Payroll** - Employee management, tax compliance, direct deposit\n📦 **Inventory** - Stock tracking, reorder alerts, product management\n🔧 **Setup & Support** - Account configuration, troubleshooting\n\n**What specific QuickBooks task can I help you with today?**";
+    }
+
+    getStatus() {
+        if (this.isLoading) return { status: 'loading', message: 'Loading SmolLM2...' };
+        if (this.isReady) return { status: 'ready', message: 'SmolLM2 ready' };
+        return { status: 'offline', message: 'SmolLM2 not loaded' };
+    }
+
+    getModelInfo() {
+        return {
+            name: 'SmolLM2-135M-Instruct',
+            size: '95MB (Q8_0 quantized)',
+            params: '135M parameters',
+            training: '2T tokens',
+            features: ['Instruction-tuned', 'Chat optimized', 'GGUF format', 'WebAssembly inference']
+        };
+    }
+}
+
+// Fallback to original implementation if SmolLM2 fails
+class FallbackBrain {
+    constructor() {
+        this.isReady = true;
+    }
+
+    async initialize() {
+        return true;
+    }
+
+    async generateResponse(userMessage) {
+        // Use the same rule-based responses as SmolLM2's fallback
+        const smolBrain = new SmolLMBrain();
+        return {
+            success: true,
+            message: smolBrain.getQuickBooksGuidance(userMessage),
+            source: 'rules'
+        };
+    }
+
+    getStatus() {
+        return { status: 'ready', message: 'Rule-based responses' };
+    }
+}
+
+// Export for main application
+window.SmolLMBrain = SmolLMBrain;
+window.FallbackBrain = FallbackBrain;
