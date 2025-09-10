@@ -1,0 +1,156 @@
+{
+  "category": "inventory",
+  "description": "Inventory tracking, stock management, and product setup troubleshooting organized by UDAS layers",
+  "udas_layers": {
+    "user": [
+      {
+        "id": "inv_u001",
+        "trigger_keywords": ["enable inventory", "turn on inventory", "inventory setup", "track inventory"],
+        "issue": "User needs to set up inventory tracking for the first time",
+        "diagnostic_questions": [
+          "Do you have QuickBooks Online Plus or Advanced (inventory requires these plans)?",
+          "Have you turned on inventory tracking in your account settings?",
+          "Do you need to track quantities or just manage product lists?"
+        ],
+        "solutions": [
+          "Upgrade to Plus or Advanced: Settings → Subscriptions → Upgrade plan",
+          "Enable inventory: Settings → Account and Settings → Sales → Turn on inventory tracking", 
+          "Add inventory items: Sales → Products and Services → New → Inventory",
+          "Set starting quantities: Enter current stock levels when creating items"
+        ],
+        "followup_layer": "data"
+      },
+      {
+        "id": "inv_u002",
+        "trigger_keywords": ["inventory permissions", "can't access inventory", "products missing"],
+        "issue": "User cannot access or modify inventory features",
+        "diagnostic_questions": [
+          "Do you have the right user permissions to manage products and inventory?",
+          "Are you looking in the right place (Sales → Products and Services)?",
+          "Can you see the Products and Services menu at all?"
+        ],
+        "solutions": [
+          "Ask admin for inventory permissions: Settings → Manage Users → Edit permissions",
+          "Check correct location: Sales → Products and Services",
+          "Verify subscription level supports inventory tracking",
+          "Make sure you're in the right company file"
+        ],
+        "followup_layer": "data"
+      }
+    ],
+    "data": [
+      {
+        "id": "inv_d001",
+        "trigger_keywords": ["wrong inventory count", "negative inventory", "stock levels incorrect"],
+        "issue": "Inventory quantities showing incorrect amounts",
+        "diagnostic_questions": [
+          "Are you seeing negative inventory quantities?",
+          "Have you recently made sales but inventory didn't decrease?",
+          "Did you manually adjust inventory but the system didn't record it?"
+        ],
+        "solutions": [
+          "Create inventory adjustment: Sales → Products and Services → Adjust quantity",
+          "Check for pending sales transactions that haven't been finalized",
+          "Review inventory reports: Reports → Inventory Valuation Summary",
+          "Verify items are set up as 'Inventory' type, not 'Non-inventory'",
+          "Look for duplicate transactions affecting the same items"
+        ],
+        "followup_layer": "application"
+      },
+      {
+        "id": "inv_d002",
+        "trigger_keywords": ["missing products", "items disappeared", "product list empty"],
+        "issue": "Products or inventory items missing from lists",
+        "diagnostic_questions": [
+          "Are the missing items showing as 'inactive' in your product list?",
+          "Did someone accidentally delete products from the system?",
+          "Are you looking at the right category or filtering the list?"
+        ],
+        "solutions": [
+          "Check inactive items: Products and Services → Include inactive",
+          "Remove filters: Clear any category or type filters applied",
+          "Restore deleted items if recently removed (contact support)",
+          "Re-create missing items with correct inventory setup",
+          "Import products from backup if available"
+        ],
+        "followup_layer": "application"
+      }
+    ],
+    "application": [
+      {
+        "id": "inv_a001",
+        "trigger_keywords": ["inventory not updating", "stock not changing", "quantity stuck"],
+        "issue": "QuickBooks not updating inventory levels automatically",
+        "diagnostic_questions": [
+          "Are you creating sales receipts or invoices for inventory items?",
+          "Have you checked if the items are set up correctly as inventory type?",
+          "Are there any pending or unsaved transactions?"
+        ],
+        "solutions": [
+          "Verify item type: Products and Services → Edit item → Ensure 'Inventory' is selected",
+          "Complete pending transactions: Check for draft invoices or unsaved sales",
+          "Refresh browser and check inventory levels again",
+          "Create manual inventory adjustment if automatic updates failed",
+          "Check if 'Track quantity on hand' is enabled for items"
+        ],
+        "followup_layer": "system"
+      },
+      {
+        "id": "inv_a002",
+        "trigger_keywords": ["inventory reports wrong", "can't generate reports", "valuation incorrect"],
+        "issue": "Inventory reporting features not working properly",
+        "diagnostic_questions": [
+          "Which specific inventory report are you trying to run?",
+          "Are you getting error messages when generating reports?",
+          "Is the report showing data but the numbers seem wrong?"
+        ],
+        "solutions": [
+          "Try different inventory reports: Reports → search 'inventory'",
+          "Check report date ranges and filters",
+          "Clear browser cache if reports won't load",
+          "Export data to Excel for manual analysis if needed",
+          "Verify inventory valuation method: FIFO vs Average Cost"
+        ],
+        "followup_layer": "system"
+      }
+    ],
+    "system": [
+      {
+        "id": "inv_s001",
+        "trigger_keywords": ["inventory sync issues", "third party integration", "POS system"],
+        "issue": "External system integration problems affecting inventory",
+        "diagnostic_questions": [
+          "Do you have a Point of Sale (POS) system connected to QuickBooks?",
+          "Are you using any third-party inventory management apps?",
+          "When did the sync between systems last work correctly?"
+        ],
+        "solutions": [
+          "Check integration status: Apps → Find your connected apps",
+          "Disconnect and reconnect problematic integrations",
+          "Contact third-party app support for sync issues",
+          "Manual sync if automatic sync is failing",
+          "Review API connection logs if available"
+        ],
+        "escalation": "third_party_support"
+      },
+      {
+        "id": "inv_s002",
+        "trigger_keywords": ["performance slow", "large inventory", "timeout errors"],
+        "issue": "System performance issues with large inventory databases",
+        "diagnostic_questions": [
+          "Do you have a very large number of inventory items (thousands)?",
+          "Are inventory operations timing out or taking very long?",
+          "Is this affecting all inventory functions or just specific reports?"
+        ],
+        "solutions": [
+          "Break large operations into smaller batches",
+          "Archive old or discontinued inventory items",
+          "Use inventory reports during off-peak hours",
+          "Contact QuickBooks about performance optimization",
+          "Consider upgrading to Advanced plan for better performance"
+        ],
+        "escalation": "quickbooks_support"
+      }
+    ]
+  }
+}

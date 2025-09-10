@@ -1,0 +1,156 @@
+{
+  "category": "reports",
+  "description": "Financial reporting, customization, and data analysis troubleshooting organized by UDAS layers",
+  "udas_layers": {
+    "user": [
+      {
+        "id": "rep_u001",
+        "trigger_keywords": ["can't find report", "missing reports", "report not available", "where is report"],
+        "issue": "User cannot locate specific reports they need",
+        "diagnostic_questions": [
+          "What specific report are you looking for (P&L, Balance Sheet, etc.)?",
+          "Are you using QuickBooks Online Simple Start, Essentials, Plus, or Advanced?",
+          "Have you checked both the Reports menu and the specific feature areas?"
+        ],
+        "solutions": [
+          "Go to Reports → Search for report name in the search bar",
+          "Check your subscription level - some reports require Plus or Advanced",
+          "Look in specific areas: Banking → Reports, Sales → Reports, etc.",
+          "Use report shortcuts: P&L = Profit and Loss, BS = Balance Sheet"
+        ],
+        "followup_layer": "data"
+      },
+      {
+        "id": "rep_u002",
+        "trigger_keywords": ["report permissions", "can't access reports", "restricted reports"],
+        "issue": "User lacks permissions to view certain reports",
+        "diagnostic_questions": [
+          "Are you a company administrator or a limited user?",
+          "Which specific reports can't you access?",
+          "Did this work before and suddenly stop working?"
+        ],
+        "solutions": [
+          "Ask company admin to upgrade your user permissions",
+          "Check your user role: Settings → Manage Users → View your role",
+          "Some reports require higher subscription levels to access",
+          "Log out and back in if permissions were recently changed"
+        ],
+        "followup_layer": "data"
+      }
+    ],
+    "data": [
+      {
+        "id": "rep_d001",
+        "trigger_keywords": ["report shows wrong data", "numbers don't match", "missing transactions"],
+        "issue": "Reports showing incorrect or incomplete financial data",
+        "diagnostic_questions": [
+          "Are you looking at the correct date range for the report?",
+          "Have you recently made changes to transactions that should appear?",
+          "Are there any unreconciled or pending transactions affecting the data?"
+        ],
+        "solutions": [
+          "Check report date range: Click date dropdown and select correct period",
+          "Refresh data: Click the refresh button or reload the page",
+          "Review transaction status: Look for pending or uncleared items",
+          "Run account reconciliation to identify discrepancies",
+          "Check if cash vs accrual accounting basis affects the numbers"
+        ],
+        "followup_layer": "application"
+      },
+      {
+        "id": "rep_d002",
+        "trigger_keywords": ["profit loss wrong", "balance sheet incorrect", "cash flow mismatch"],
+        "issue": "Specific financial statement data discrepancies",
+        "diagnostic_questions": [
+          "Are you comparing cash basis vs accrual basis reporting?",
+          "Have you checked if there are undeposited funds affecting cash flow?",
+          "Are there any journal entries or adjustments that might explain differences?"
+        ],
+        "solutions": [
+          "Switch between cash and accrual basis: Report customization → Accounting method",
+          "Check undeposited funds account for pending deposits",
+          "Review journal entries: Reports → Account and Settings → Journal",
+          "Verify opening balances are correct for all accounts",
+          "Run detailed transaction reports to trace specific amounts"
+        ],
+        "followup_layer": "application"
+      }
+    ],
+    "application": [
+      {
+        "id": "rep_a001",
+        "trigger_keywords": ["report won't load", "stuck loading", "report error", "something went wrong"],
+        "issue": "QuickBooks reporting interface not loading properly",
+        "diagnostic_questions": [
+          "Which browser are you using to access reports?",
+          "Does this happen with all reports or just specific ones?",
+          "Are you getting any specific error messages?"
+        ],
+        "solutions": [
+          "Clear browser cache and cookies completely",
+          "Try accessing reports in incognito/private browsing mode",
+          "Use a different browser (Chrome recommended for reports)",
+          "Disable browser extensions that might block report loading",
+          "Try shorter date ranges if reports are timing out"
+        ],
+        "followup_layer": "system"
+      },
+      {
+        "id": "rep_a002",
+        "trigger_keywords": ["can't print report", "pdf not working", "export failed"],
+        "issue": "Report printing or export functionality problems",
+        "diagnostic_questions": [
+          "Are you trying to print, export to PDF, or export to Excel?",
+          "Do you get any error messages when attempting to export?",
+          "Have you tried different export formats?"
+        ],
+        "solutions": [
+          "Try different export options: Print, PDF, Excel, Email",
+          "Use browser print function: Ctrl+P after opening report",
+          "Check browser popup blockers - they might block PDF downloads",
+          "Try exporting smaller date ranges if large reports fail",
+          "Use 'Send' option to email report as PDF attachment"
+        ],
+        "followup_layer": "system"
+      }
+    ],
+    "system": [
+      {
+        "id": "rep_s001",
+        "trigger_keywords": ["slow reports", "report timeout", "performance issues"],
+        "issue": "System performance problems affecting report generation",
+        "diagnostic_questions": [
+          "Are you running reports for very long date ranges (multiple years)?",
+          "Is your internet connection stable and fast enough?",
+          "Are you experiencing slowness in other parts of QuickBooks too?"
+        ],
+        "solutions": [
+          "Try shorter date ranges to reduce processing time",
+          "Run reports during off-peak hours for better performance",
+          "Check internet speed - reports need good connectivity",
+          "Close other browser tabs that might be using memory",
+          "Contact QuickBooks if system-wide performance issues persist"
+        ],
+        "escalation": "quickbooks_support"
+      },
+      {
+        "id": "rep_s002",
+        "trigger_keywords": ["report server error", "service unavailable", "maintenance"],
+        "issue": "QuickBooks reporting servers experiencing issues",
+        "diagnostic_questions": [
+          "Are other users in your company experiencing the same problem?",
+          "Have you checked QuickBooks status page for service announcements?",
+          "When did this issue first start occurring?"
+        ],
+        "solutions": [
+          "Check QuickBooks system status page for known issues",
+          "Wait for service maintenance to complete (usually a few hours)",
+          "Try accessing reports later during off-peak hours",
+          "Use mobile app as alternative if desktop reports are down",
+          "Contact QuickBooks support if issues persist beyond maintenance"
+        ],
+        "escalation": "quickbooks_support"
+      }
+    ]
+  }
+}

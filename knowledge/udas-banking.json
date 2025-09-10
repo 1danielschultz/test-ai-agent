@@ -1,0 +1,155 @@
+{
+  "category": "banking",
+  "description": "Bank connection and transaction troubleshooting organized by UDAS layers",
+  "udas_layers": {
+    "user": [
+      {
+        "id": "bank_u001",
+        "trigger_keywords": ["can't connect", "bank login", "credentials", "password", "username"],
+        "issue": "User credentials preventing bank connection",
+        "diagnostic_questions": [
+          "Have you successfully logged into your bank's website today using these same credentials?",
+          "Did you recently change your online banking password or username?",
+          "Are you using the correct account type (business vs personal) for this connection?"
+        ],
+        "solutions": [
+          "Test your credentials by logging into your bank's website directly",
+          "Update your login information in QuickBooks if you changed it at the bank",
+          "Make sure you're selecting the correct account type when connecting",
+          "Check if your bank requires you to log in directly before allowing third-party connections"
+        ],
+        "followup_layer": "data",
+        "error_codes": ["103"]
+      },
+      {
+        "id": "bank_u002", 
+        "trigger_keywords": ["permissions", "access denied", "not authorized", "account inactive"],
+        "issue": "User account permissions or status issues",
+        "diagnostic_questions": [
+          "Is your bank account currently active with a balance or recent transactions?",
+          "Do you have online banking privileges enabled for this account?",
+          "Are you the primary account holder or an authorized user?"
+        ],
+        "solutions": [
+          "Contact your bank to verify online banking is enabled",
+          "Ensure the account has been active within the past 12 months",
+          "Verify you have the necessary permissions to connect third-party apps",
+          "Check if the account needs to be 'aged' (some new accounts can't connect immediately)"
+        ],
+        "followup_layer": "data"
+      }
+    ],
+    "data": [
+      {
+        "id": "bank_d001",
+        "trigger_keywords": ["duplicate transactions", "missing deposits", "wrong amounts", "incorrect dates"],
+        "issue": "Transaction data inconsistencies or corruption",
+        "diagnostic_questions": [
+          "Are you seeing the same transaction appear multiple times in your feed?",
+          "When was the last time your transactions synced correctly?",
+          "Are the transaction amounts matching what you see on your bank statement?"
+        ],
+        "solutions": [
+          "Review and delete duplicate transactions in the Banking tab",
+          "Check transaction matching rules and reset if necessary", 
+          "Verify the date range for your bank sync settings",
+          "Manually refresh your bank connection to pull missing transactions"
+        ],
+        "followup_layer": "application"
+      },
+      {
+        "id": "bank_d002",
+        "trigger_keywords": ["balance mismatch", "reconciliation", "starting balance", "ending balance"],
+        "issue": "Account balance discrepancies between bank and QuickBooks",
+        "diagnostic_questions": [
+          "When did you last successfully reconcile this account?",
+          "Have you manually entered any transactions that might also be downloaded?",
+          "Did you change the opening balance for this account recently?"
+        ],
+        "solutions": [
+          "Run a reconciliation report to identify discrepancies",
+          "Look for manually entered transactions that duplicate downloaded ones",
+          "Check if the account opening balance is correct",
+          "Review uncleared transactions that might be affecting the balance"
+        ],
+        "followup_layer": "application"
+      }
+    ],
+    "application": [
+      {
+        "id": "bank_a001",
+        "trigger_keywords": ["browser error", "page won't load", "timeout", "spinning wheel", "frozen"],
+        "issue": "QuickBooks Online banking interface problems",
+        "diagnostic_questions": [
+          "Which browser are you using and what version?",
+          "Does this happen when you try QuickBooks in an incognito/private window?",
+          "Are you using any browser extensions that might interfere?"
+        ],
+        "solutions": [
+          "Clear your browser cache and cookies completely",
+          "Try using a different browser (Chrome, Firefox, Safari, Edge)",
+          "Disable browser extensions temporarily",
+          "Update your browser to the latest version",
+          "Use incognito/private browsing mode to test"
+        ],
+        "followup_layer": "system",
+        "error_codes": ["101", "102", "105"]
+      },
+      {
+        "id": "bank_a002",
+        "trigger_keywords": ["error 101", "error 102", "error 105", "something went wrong"],
+        "issue": "Specific QuickBooks banking error codes",
+        "diagnostic_questions": [
+          "What specific error code are you seeing?",
+          "Does this error appear immediately when connecting or after some time?",
+          "Have you tried manually updating your bank connection recently?"
+        ],
+        "solutions": [
+          "Error 101: Try a new browser tab or different browser, check for missed prompts on bank website",
+          "Error 102/105: Usually bank-side maintenance, wait 48 hours and try manual update",
+          "Error 103: Username/password incorrect, verify credentials and update in QuickBooks",
+          "Clear cache, restart browser, and try connecting again"
+        ],
+        "followup_layer": "system",
+        "error_codes": ["101", "102", "103", "105"]
+      }
+    ],
+    "system": [
+      {
+        "id": "bank_s001",
+        "trigger_keywords": ["connection failed", "network error", "internet", "offline"],
+        "issue": "Internet connectivity affecting bank connections",
+        "diagnostic_questions": [
+          "Is your internet connection stable right now?",
+          "Are other websites loading normally for you?",
+          "Are you using a VPN or corporate network that might block connections?"
+        ],
+        "solutions": [
+          "Test your internet speed and stability",
+          "Try using a mobile hotspot as a test",
+          "Disable VPN temporarily if you're using one",
+          "Contact your ISP if internet problems persist",
+          "Check if your firewall is blocking QuickBooks connections"
+        ],
+        "escalation": "quickbooks_support"
+      },
+      {
+        "id": "bank_s002",
+        "trigger_keywords": ["bank maintenance", "server down", "temporarily unavailable"],
+        "issue": "External bank server or maintenance issues",
+        "diagnostic_questions": [
+          "Have you checked your bank's website for maintenance announcements?",
+          "Are other customers reporting similar issues on social media?",
+          "When did this problem first start occurring?"
+        ],
+        "solutions": [
+          "Check your bank's website or social media for service announcements",
+          "Wait for maintenance windows to complete (usually 24-48 hours)",
+          "Try connecting during off-peak hours",
+          "Contact your bank if issues persist beyond announced maintenance"
+        ],
+        "escalation": "bank_support"
+      }
+    ]
+  }
+}

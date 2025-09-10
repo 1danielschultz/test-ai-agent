@@ -12,6 +12,10 @@ class SmolLMBrain {
         // Response caching for speed
         this.responseCache = new Map();
         this.maxCacheSize = 50;
+        
+        // RAG engine for knowledge enhancement
+        this.rag = new LocalRAG();
+        this.ragReady = false;
     }
 
     async initialize() {
@@ -26,6 +30,9 @@ class SmolLMBrain {
             
             // Download and load the model
             await this.loadModel();
+            
+            // Initialize RAG engine
+            await this.initializeRAG();
             
             this.isReady = true;
             this.isLoading = false;
@@ -108,6 +115,18 @@ class SmolLMBrain {
         }
     }
 
+    async initializeRAG() {
+        try {
+            this.ragReady = await this.rag.initialize();
+            if (this.ragReady) {
+                console.log('🔍 RAG knowledge base loaded successfully');
+            }
+        } catch (error) {
+            console.warn('⚠️ RAG initialization failed, using basic responses:', error);
+            this.ragReady = false;
+        }
+    }
+
     async generateResponse(userMessage) {
         if (!this.isReady) {
             return {
@@ -133,8 +152,16 @@ class SmolLMBrain {
             if (this.model && this.llamaCpp) {
                 console.log('🤖 Generating response with SmolLM2...');
                 
+                // Get RAG context if available
+                let ragContext = '';
+                if (this.ragReady) {
+                    const currentLayer = this.rag.determineCurrentUdasLayer(userMessage);
+                    const relevantKnowledge = await this.rag.searchRelevantKnowledge(userMessage, currentLayer);
+                    ragContext = this.rag.formatContextForPrompt(relevantKnowledge);
+                }
+                
                 const prompt = `<|im_start|>system
-You're a QuickBooks support specialist using UDAS troubleshooting (User→Data→Application→System). Be empathetic, ask ONE question at a time, start with User layer issues like permissions/workflow, then move through Data (duplicates/corruption), Application (browser/cache), System (connectivity). Provide step-by-step solutions.<|im_end|>
+You're a QuickBooks support specialist using UDAS troubleshooting (User→Data→Application→System). Be empathetic, ask ONE question at a time, start with User layer issues like permissions/workflow, then move through Data (duplicates/corruption), Application (browser/cache), System (connectivity). Provide step-by-step solutions.${ragContext}<|im_end|>
 <|im_start|>user
 ${userMessage}<|im_end|>
 <|im_start|>assistant

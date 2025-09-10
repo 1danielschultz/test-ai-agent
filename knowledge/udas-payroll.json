@@ -1,0 +1,154 @@
+{
+  "category": "payroll",
+  "description": "Payroll processing, tax calculation, and employee management troubleshooting organized by UDAS layers",
+  "udas_layers": {
+    "user": [
+      {
+        "id": "pay_u001",
+        "trigger_keywords": ["payroll setup", "employee setup", "tax setup", "first payroll"],
+        "issue": "User needs help setting up payroll for the first time",
+        "diagnostic_questions": [
+          "Have you subscribed to QuickBooks Payroll (it's a separate paid service)?",
+          "Do you have all your employee information ready (SSN, address, tax forms)?",
+          "Have you determined your pay schedule (weekly, bi-weekly, monthly)?"
+        ],
+        "solutions": [
+          "Subscribe to QuickBooks Payroll: Payroll → Get Started → Choose plan ($45/month + $6/employee)",
+          "Gather required info: Employee SSN, I-9 forms, W-4 forms, state tax forms",
+          "Set up company payroll info: Payroll → Payroll Settings → Company setup",
+          "Add employees one by one with complete tax information"
+        ],
+        "followup_layer": "data"
+      },
+      {
+        "id": "pay_u002",
+        "trigger_keywords": ["employee permissions", "payroll access", "can't see payroll"],
+        "issue": "User doesn't have proper permissions to access payroll features",
+        "diagnostic_questions": [
+          "Are you the company administrator or do you have payroll permissions?",
+          "Can you see the Payroll tab in your QuickBooks navigation?",
+          "Did the company owner give you access to payroll functions?"
+        ],
+        "solutions": [
+          "Ask company admin to grant payroll permissions: Settings → Manage Users → Edit your role",
+          "Verify you're logged into the correct company file",
+          "Check if payroll subscription is active and paid up",
+          "Contact company owner to upgrade your user permissions"
+        ],
+        "followup_layer": "data"
+      }
+    ],
+    "data": [
+      {
+        "id": "pay_d001",
+        "trigger_keywords": ["wrong tax calculation", "incorrect deductions", "tax not calculating"],
+        "issue": "Payroll tax calculations are incorrect or not working",
+        "diagnostic_questions": [
+          "Are the employee's tax withholdings set up correctly on their profile?",
+          "Have you updated the latest tax tables in QuickBooks?",
+          "Are the employee's salary/hourly rates entered correctly?"
+        ],
+        "solutions": [
+          "Update employee tax info: Payroll → Employees → Edit employee → Tax info tab",
+          "Download latest tax tables: Payroll → Payroll Settings → Tax Setup → Update",
+          "Verify employee pay rates: Payroll → Employees → Edit employee → Pay info",
+          "Check state tax settings if you operate in multiple states"
+        ],
+        "followup_layer": "application"
+      },
+      {
+        "id": "pay_d002",
+        "trigger_keywords": ["missing employee", "duplicate paycheck", "payroll history wrong"],
+        "issue": "Employee data or payroll history problems",
+        "diagnostic_questions": [
+          "Are you missing employees from your employee list?",
+          "Do you see duplicate paychecks for the same pay period?",
+          "Is the payroll history showing incorrect amounts or dates?"
+        ],
+        "solutions": [
+          "Check for inactive employees: Payroll → Employees → Include inactive",
+          "Delete duplicate paychecks: Payroll → Payroll History → Delete duplicates",
+          "Verify payroll records: Payroll → Reports → Payroll Summary",
+          "Re-enter missing payroll data if records were lost"
+        ],
+        "followup_layer": "application"
+      }
+    ],
+    "application": [
+      {
+        "id": "pay_a001",
+        "trigger_keywords": ["payroll won't process", "stuck processing", "payroll error"],
+        "issue": "QuickBooks payroll processing interface problems",
+        "diagnostic_questions": [
+          "At what step does the payroll process get stuck or fail?",
+          "Are you seeing any specific error messages?",
+          "Have you tried processing payroll in a different browser?"
+        ],
+        "solutions": [
+          "Clear browser cache and cookies completely",
+          "Try processing payroll in incognito/private browsing mode",
+          "Use a different browser (Chrome works best for payroll)",
+          "Disable browser extensions that might interfere",
+          "Process one employee at a time if batch processing fails"
+        ],
+        "followup_layer": "system"
+      },
+      {
+        "id": "pay_a002",
+        "trigger_keywords": ["direct deposit failed", "paycheck printing", "pay stub errors"],
+        "issue": "Paycheck delivery or printing problems",
+        "diagnostic_questions": [
+          "Are you set up for direct deposit or printing physical checks?",
+          "Have employees' bank account information been verified?",
+          "Are you using the correct check stock for printing?"
+        ],
+        "solutions": [
+          "Verify direct deposit setup: Payroll → Payroll Settings → Direct Deposit",
+          "Check employee bank info: Payroll → Employees → Edit → Direct Deposit tab",
+          "Use compatible check stock for printing paychecks",
+          "Test print alignment before running full payroll",
+          "Contact bank if direct deposits are being rejected"
+        ],
+        "followup_layer": "system"
+      }
+    ],
+    "system": [
+      {
+        "id": "pay_s001",
+        "trigger_keywords": ["bank connection failed", "direct deposit rejected", "payroll bank error"],
+        "issue": "Banking system problems affecting payroll",
+        "diagnostic_questions": [
+          "Is your business bank account connected and active in QuickBooks?",
+          "Have you verified your business bank account for payroll purposes?",
+          "Are you experiencing banking issues outside of payroll as well?"
+        ],
+        "solutions": [
+          "Re-verify your business bank account for payroll: Payroll → Payroll Settings → Bank Account",
+          "Contact your bank to ensure ACH transactions are enabled",
+          "Check if your account has sufficient funds for payroll + fees",
+          "Verify your business bank account routing and account numbers",
+          "Allow 1-2 business days for bank verification process"
+        ],
+        "escalation": "bank_support"
+      },
+      {
+        "id": "pay_s002",
+        "trigger_keywords": ["tax service down", "IRS connection", "state tax filing"],
+        "issue": "External tax service or government system issues",
+        "diagnostic_questions": [
+          "Are you trying to file tax forms during a government shutdown period?",
+          "Have you received any notices from tax agencies about system maintenance?",
+          "Are other businesses reporting similar tax filing issues?"
+        ],
+        "solutions": [
+          "Check IRS and state tax agency websites for system status updates",
+          "Wait for maintenance periods to complete before retrying",
+          "File tax forms manually if electronic filing is unavailable",
+          "Contact QuickBooks Payroll support for alternative filing methods",
+          "Keep records of attempted filings for compliance purposes"
+        ],
+        "escalation": "tax_authority"
+      }
+    ]
+  }
+}

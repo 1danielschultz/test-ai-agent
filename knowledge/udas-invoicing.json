@@ -1,0 +1,154 @@
+{
+  "category": "invoicing", 
+  "description": "Invoice creation, payment, and email troubleshooting organized by UDAS layers",
+  "udas_layers": {
+    "user": [
+      {
+        "id": "inv_u001",
+        "trigger_keywords": ["can't create invoice", "missing customer", "wrong template", "invoice setup"],
+        "issue": "User unable to create or set up invoices properly",
+        "diagnostic_questions": [
+          "Have you created this customer in your customer list yet?",
+          "Are you using the correct invoice template for your business type?",
+          "Do you have the right permissions to create invoices in this company?"
+        ],
+        "solutions": [
+          "Create the customer first: Sales → Customers → New Customer",
+          "Verify you're using a Modern template instead of Custom for payment buttons",
+          "Check your user role permissions with the account administrator",
+          "Set up your company information in Settings → Company for professional invoices"
+        ],
+        "followup_layer": "data"
+      },
+      {
+        "id": "inv_u002",
+        "trigger_keywords": ["payment terms", "due date wrong", "tax settings", "pricing errors"],
+        "issue": "User configuration errors in invoice settings",
+        "diagnostic_questions": [
+          "Have you set up your default payment terms in company settings?",
+          "Are your tax settings configured correctly for your location?",
+          "Have you verified the pricing on your products and services?"
+        ],
+        "solutions": [
+          "Set payment terms: Settings → Account and Settings → Sales → Payment Terms",
+          "Configure tax settings: Taxes → Sales Tax → Set up your tax rates",
+          "Update product pricing: Sales → Products and Services → Edit items",
+          "Review invoice template customization in Settings → Custom Form Styles"
+        ],
+        "followup_layer": "data"
+      }
+    ],
+    "data": [
+      {
+        "id": "inv_d001",
+        "trigger_keywords": ["duplicate invoices", "missing invoice numbers", "wrong customer data"],
+        "issue": "Invoice data corruption or duplicate entries",
+        "diagnostic_questions": [
+          "Are you seeing duplicate invoice numbers in your invoice list?",
+          "Is the customer information showing correctly on existing invoices?",
+          "Have you recently imported data that might have caused duplicates?"
+        ],
+        "solutions": [
+          "Check Sales → Invoices for duplicate entries and delete extras",
+          "Verify customer data: Sales → Customers → Edit customer information",
+          "Review import history and clean up duplicate data",
+          "Reset invoice numbering: Settings → Account and Settings → Sales → Invoice Options"
+        ],
+        "followup_layer": "application"
+      },
+      {
+        "id": "inv_d002", 
+        "trigger_keywords": ["products missing", "service items gone", "inventory errors"],
+        "issue": "Missing or incorrect product/service data on invoices",
+        "diagnostic_questions": [
+          "Are your products and services still showing in the Products and Services list?",
+          "Have you accidentally marked any items as inactive?",
+          "Are the prices and descriptions correct for your items?"
+        ],
+        "solutions": [
+          "Check Sales → Products and Services → Make inactive items active again",
+          "Verify item details and update pricing/descriptions as needed",
+          "Re-create missing items if they were accidentally deleted",
+          "Review item categories and organize for easier invoice creation"
+        ],
+        "followup_layer": "application"
+      }
+    ],
+    "application": [
+      {
+        "id": "inv_a001",
+        "trigger_keywords": ["invoice won't send", "email not working", "can't email invoices"],
+        "issue": "Email delivery problems for invoices",
+        "diagnostic_questions": [
+          "Are you getting any specific error messages when trying to send?",
+          "Have you verified the customer's email address is correct?",
+          "Are you able to send invoices to other customers successfully?"
+        ],
+        "solutions": [
+          "Verify customer email addresses: Sales → Customers → Edit customer",
+          "Check your spam/junk folder for delivery confirmations",
+          "Try sending from a different browser or incognito mode",
+          "Update your email preferences: Settings → Account and Settings → Sales → Messages",
+          "Test with your own email address first"
+        ],
+        "followup_layer": "system"
+      },
+      {
+        "id": "inv_a002",
+        "trigger_keywords": ["pay invoice button", "payment not working", "online payments"],
+        "issue": "Online payment functionality not working on invoices",
+        "diagnostic_questions": [
+          "Are you using a Modern template or a Custom template?",
+          "Have you turned on QuickBooks Payments for your account?",
+          "Are all your accepted payment methods configured properly?"
+        ],
+        "solutions": [
+          "Switch to Modern template: Settings → Custom Form Styles → Use Modern template",
+          "Set up QuickBooks Payments: Settings → Payments → Sign up for payments",
+          "Configure payment methods: Settings → Account and Settings → Payments",
+          "Turn off all payment methods temporarily, then turn them back on",
+          "Check if your payment processor account needs verification"
+        ],
+        "followup_layer": "system"
+      }
+    ],
+    "system": [
+      {
+        "id": "inv_s001",
+        "trigger_keywords": ["email delivery failed", "not receiving emails", "smtp error"],
+        "issue": "Email system or delivery problems",
+        "diagnostic_questions": [
+          "Are you having email problems outside of QuickBooks as well?",
+          "Have you checked if your email provider is blocking QuickBooks emails?",
+          "Are customers reporting they're not receiving any emails from you?"
+        ],
+        "solutions": [
+          "Contact your email provider to whitelist QuickBooks email servers",
+          "Check your email server settings if using custom domain",
+          "Ask customers to check spam/junk folders and whitelist your email",
+          "Test email delivery with a personal email account",
+          "Consider using QuickBooks' built-in email service instead of custom SMTP"
+        ],
+        "escalation": "email_provider_support"
+      },
+      {
+        "id": "inv_s002",
+        "trigger_keywords": ["payment processor down", "credit card not working", "payment gateway"],
+        "issue": "External payment processing system issues",
+        "diagnostic_questions": [
+          "Are you seeing payment failures across multiple customers?",
+          "Has your payment processor sent any service notifications?",
+          "Are you able to process payments through other systems?"
+        ],
+        "solutions": [
+          "Check payment processor status page for outages",
+          "Contact QuickBooks Payments support if using their system",
+          "Verify your merchant account is in good standing",
+          "Test payments with different credit cards",
+          "Consider alternative payment methods temporarily"
+        ],
+        "escalation": "payment_processor_support"
+      }
+    ]
+  }
+}

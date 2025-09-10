@@ -1,0 +1,108 @@
+{
+  "keywords": {
+    "bank": ["banking"],
+    "banking": ["banking"],
+    "connect": ["banking", "invoicing"],
+    "connection": ["banking"],
+    "login": ["banking"],
+    "credentials": ["banking"],
+    "password": ["banking"],
+    "username": ["banking"],
+    "duplicate": ["banking", "invoicing", "payroll"],
+    "transactions": ["banking"],
+    "balance": ["banking", "reports"],
+    "reconcile": ["banking", "reports"],
+    "error": ["banking", "invoicing", "payroll", "reports", "inventory"],
+    "browser": ["banking", "invoicing", "payroll", "reports", "inventory"],
+    "cache": ["banking", "invoicing", "payroll", "reports", "inventory"],
+    "internet": ["banking", "invoicing", "payroll", "reports", "inventory"],
+    "network": ["banking", "invoicing", "payroll", "reports", "inventory"],
+    
+    "invoice": ["invoicing"],
+    "invoicing": ["invoicing"],
+    "customer": ["invoicing"],
+    "payment": ["invoicing", "banking"],
+    "email": ["invoicing"],
+    "send": ["invoicing"],
+    "template": ["invoicing"],
+    "tax": ["invoicing", "payroll"],
+    "pricing": ["invoicing"],
+    "products": ["invoicing", "inventory"],
+    "services": ["invoicing", "inventory"],
+    
+    "payroll": ["payroll"],
+    "employee": ["payroll"],
+    "salary": ["payroll"],
+    "wages": ["payroll"],
+    "deductions": ["payroll"],
+    "taxes": ["payroll"],
+    "direct deposit": ["payroll"],
+    "paycheck": ["payroll"],
+    "setup": ["payroll", "invoicing", "inventory"],
+    "permissions": ["payroll", "invoicing", "reports", "inventory"],
+    
+    "report": ["reports"],
+    "reports": ["reports"],
+    "profit": ["reports"],
+    "loss": ["reports"],
+    "balance sheet": ["reports"],
+    "cash flow": ["reports"],
+    "financial": ["reports"],
+    "data": ["reports", "banking", "inventory"],
+    "numbers": ["reports"],
+    "wrong": ["reports", "banking", "payroll", "inventory"],
+    "missing": ["reports", "banking", "invoicing", "inventory"],
+    
+    "inventory": ["inventory"],
+    "stock": ["inventory"],
+    "quantity": ["inventory"],
+    "tracking": ["inventory"],
+    "items": ["inventory", "invoicing"],
+    "negative": ["inventory"],
+    "count": ["inventory"],
+    "valuation": ["inventory"],
+    "sync": ["inventory", "banking"]
+  },
+  
+  "categories": {
+    "banking": {
+      "description": "Bank connections, transactions, reconciliation",
+      "common_issues": ["connection_failed", "duplicate_transactions", "missing_transactions", "error_codes"]
+    },
+    "invoicing": {
+      "description": "Invoice creation, payments, email delivery",
+      "common_issues": ["email_not_sending", "payment_button_missing", "customer_setup", "template_issues"]
+    },
+    "payroll": {
+      "description": "Employee management, tax calculations, direct deposit",
+      "common_issues": ["tax_calculation_wrong", "employee_setup", "direct_deposit_failed", "permissions"]
+    },
+    "reports": {
+      "description": "Financial reports, data accuracy, export issues",
+      "common_issues": ["report_not_loading", "wrong_data", "export_failed", "missing_reports"]
+    },
+    "inventory": {
+      "description": "Stock tracking, quantity management, product setup",
+      "common_issues": ["negative_inventory", "quantities_not_updating", "missing_items", "tracking_setup"]
+    }
+  },
+  
+  "udas_layers": {
+    "user": {
+      "description": "User permissions, setup, workflow issues",
+      "keywords": ["permissions", "setup", "access", "login", "first time", "how to"]
+    },
+    "data": {
+      "description": "Data integrity, duplicates, missing entries",
+      "keywords": ["duplicate", "missing", "wrong", "incorrect", "data", "numbers", "balance"]
+    },
+    "application": {
+      "description": "QuickBooks interface, browser, feature issues", 
+      "keywords": ["browser", "error", "won't load", "stuck", "timeout", "cache", "frozen"]
+    },
+    "system": {
+      "description": "External systems, connectivity, performance",
+      "keywords": ["internet", "network", "slow", "connection", "server", "maintenance", "sync"]
+    }
+  }
+}
