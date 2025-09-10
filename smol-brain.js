@@ -161,20 +161,39 @@ class SmolLMBrain {
                 }
                 
                 const prompt = `<|im_start|>system
-You're a QuickBooks support specialist using UDAS troubleshooting (User→Data→Application→System). Be empathetic, ask ONE question at a time, start with User layer issues like permissions/workflow, then move through Data (duplicates/corruption), Application (browser/cache), System (connectivity). Provide step-by-step solutions.${ragContext}<|im_end|>
+You are a QuickBooks Online expert who uses UDAS methodology to systematically troubleshoot issues.
+
+UDAS Framework:
+- USER layer: Check permissions, user training, workflow issues first
+- DATA layer: Look for duplicates, missing entries, corrupted data
+- APPLICATION layer: Browser problems, cache issues, QuickBooks bugs
+- SYSTEM layer: Internet connectivity, external service issues
+
+Response Format:
+1. Acknowledge the issue with empathy
+2. Ask ONE specific diagnostic question (start with User layer)
+3. Briefly explain why you're asking this question
+4. Provide a helpful tip while they investigate
+
+Example Response:
+"I understand how frustrating bank connection issues can be! Let's solve this systematically.
+
+First, let's check the User layer - have you successfully logged into your bank's website today using the same credentials? I'm asking because banks often require direct login before allowing third-party connections.
+
+While you check that, here's a tip: Most connection issues resolve when you verify your online banking is active first."${ragContext}<|im_end|>
 <|im_start|>user
 ${userMessage}<|im_end|>
 <|im_start|>assistant
 `;
 
                 const response = await this.model.createCompletion(prompt, {
-                    nPredict: 80,         // Reduced from 150 for faster generation
+                    nPredict: 150,        // Increased for proper UDAS responses
                     sampling: {
-                        temp: 0.5,        // Lower temp = more decisive = faster
-                        top_k: 20,        // Reduced from 40 = fewer options
-                        top_p: 0.8        // Reduced from 0.9 = faster sampling
+                        temp: 0.7,        // Higher temp for more varied responses
+                        top_k: 40,        // More options for better quality
+                        top_p: 0.9        // More diversity in sampling
                     },
-                    stopSequences: ['<|im_end|>', '<|im_start|>', '\n\n', '**']
+                    stopSequences: ['<|im_end|>', '<|im_start|>']
                 });
 
                 let text = this.cleanResponse(response);
@@ -240,25 +259,36 @@ ${userMessage}<|im_end|>
     }
 
     isGenericResponse(text) {
-        const genericPhrases = [
-            'I can help',
-            'I understand', 
-            'Thank you',
-            'How can I assist',
-            'I\'m here to help'
+        const badPhrases = [
+            'I\'m sorry for the confusion',
+            'I\'m unable to provide',
+            'I\'m not equipped to',
+            'I can\'t help with',
+            'I don\'t have access',
+            'as a UDAS-guided AI',
+            'I\'m designed to assist you with your business needs'
         ];
         
-        return genericPhrases.some(phrase => 
+        // Check for bad generic responses that avoid helping
+        const hasGenericAvoidance = badPhrases.some(phrase => 
             text.toLowerCase().includes(phrase.toLowerCase())
-        ) && text.length < 50;
+        );
+        
+        // Check if response is too short and generic
+        const tooShortAndGeneric = text.length < 30 && (
+            text.toLowerCase().includes('help') || 
+            text.toLowerCase().includes('assist')
+        );
+        
+        return hasGenericAvoidance || tooShortAndGeneric;
     }
 
     getQuickBooksGuidance(userMessage) {
         const message = userMessage.toLowerCase();
         
-        // Enhanced QuickBooks knowledge base
+        // UDAS-guided fallback responses 
         if (message.includes('bank') || message.includes('connect') || message.includes('link')) {
-            return "To connect your bank to QuickBooks Online:\n\n1. Go to **Banking** → **Connect Account**\n2. Search and select your bank\n3. Enter your online banking credentials\n4. Choose accounts to sync\n5. Review and categorize transactions\n\nTroubleshooting: Ensure online banking is active and try incognito mode if connection fails.";
+            return "I understand how frustrating bank connection issues can be! Let's work through this systematically using UDAS troubleshooting.\n\nFirst, let's check the User layer - have you successfully logged into your bank's website today using the same credentials you use for QuickBooks? I'm asking this because banks often require you to log in directly before allowing third-party connections.\n\nWhile you check that, here's a quick tip: Most connection issues resolve when you verify your online banking is active first.";
         }
         
         if (message.includes('invoice') || message.includes('bill') || message.includes('customer')) {
