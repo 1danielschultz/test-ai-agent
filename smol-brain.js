@@ -37,49 +37,28 @@ class SmolLMBrain {
     }
 
     async loadLlamaCppWasm() {
-        // Use jsdelivr CDN for wllama
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.textContent = `
-            try {
-                const { Wllama } = await import('https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/index.js');
-                
-                // WASM config for CDN usage
-                const CONFIG_PATHS = {
-                    'single-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/single-thread/wllama.wasm',
-                    'multi-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.wasm',
-                };
-                
-                window.WllamaClass = Wllama;
-                window.WllamaConfig = CONFIG_PATHS;
-                console.log('✅ Wllama loaded from jsdelivr CDN');
-            } catch (error) {
-                console.warn('Wllama CDN failed:', error);
-                window.WllamaClass = null;
-                window.WllamaConfig = null;
-            }
-        `;
+        console.log('🔄 Loading Wllama directly...');
         
-        return new Promise((resolve, reject) => {
-            script.onload = () => {
-                console.log('🔄 Script loaded, waiting for module...');
-                // Wait for the dynamic import to complete
-                setTimeout(() => {
-                    this.llamaCpp = window.WllamaClass;
-                    this.wasmConfig = window.WllamaConfig;
-                    console.log('🔄 Wllama classes assigned:', {
-                        hasClass: !!this.llamaCpp,
-                        hasConfig: !!this.wasmConfig
-                    });
-                    resolve();
-                }, 500); // Increased timeout
+        try {
+            // Direct dynamic import approach
+            const wllamaModule = await import('https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/index.js');
+            
+            this.llamaCpp = wllamaModule.Wllama;
+            
+            // WASM config for CDN usage
+            this.wasmConfig = {
+                'single-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/single-thread/wllama.wasm',
+                'multi-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.wasm',
             };
-            script.onerror = () => {
-                console.warn('Wllama script failed to load, using fallback');
-                resolve();
-            };
-            document.head.appendChild(script);
-        });
+            
+            console.log('✅ Wllama loaded successfully');
+            console.log('🔄 Wllama class available:', !!this.llamaCpp);
+            
+        } catch (error) {
+            console.warn('🔄 Wllama direct import failed, will use rule-based fallback:', error);
+            this.llamaCpp = null;
+            this.wasmConfig = null;
+        }
     }
 
     async loadModel() {
