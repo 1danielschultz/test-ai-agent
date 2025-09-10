@@ -8,6 +8,10 @@ class SmolLMBrain {
         this.llamaCpp = null;
         this.model = null;
         this.modelPath = new URL('./models/SmolLM2-135M-Instruct.Q4_1.gguf', window.location.href).href;
+        
+        // Response caching for speed
+        this.responseCache = new Map();
+        this.maxCacheSize = 50;
     }
 
     async initialize() {
@@ -76,10 +80,12 @@ class SmolLMBrain {
             
             console.log('🔄 Initializing Wllama...');
             
-            // Initialize Wllama with WASM config and 4096 context window
+            // Initialize Wllama with optimized settings for speed
             this.model = new this.llamaCpp(this.wasmConfig, {
-                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8),
-                n_ctx: 4096  // Increased context window for longer conversations
+                n_threads: Math.min(navigator.hardwareConcurrency || 4, 12),
+                n_ctx: 2048,      // Reduced context window for faster inference
+                n_batch: 512,     // Larger batch size for efficiency
+                n_gpu_layers: 0   // Ensure CPU-only processing
             });
             
             // Load model from local file using loadModelFromUrl
@@ -110,93 +116,48 @@ class SmolLMBrain {
             };
         }
 
+        // Check cache first for speed
+        const cacheKey = this.normalizeMessage(userMessage);
+        const cachedResponse = this.responseCache.get(cacheKey);
+        if (cachedResponse) {
+            console.log('⚡ Using cached response for faster delivery');
+            return {
+                success: true,
+                message: cachedResponse,
+                source: 'cache'
+            };
+        }
+
         // Try WASM inference with wllama if available
         try {
             if (this.model && this.llamaCpp) {
                 console.log('🤖 Generating response with SmolLM2...');
                 
                 const prompt = `<|im_start|>system
-You are a friendly QuickBooks Online support specialist who uses the UDAS troubleshooting methodology to systematically diagnose and resolve issues. UDAS stands for User, Data, Application, and System - a proven framework for isolating the root cause of problems.
-
-## Your Role & Personality:
-- Be conversational, empathetic, and patient
-- Ask one clarifying question at a time to avoid overwhelming users
-- Acknowledge user frustration and provide reassurance
-- Celebrate small wins and progress during troubleshooting
-- Use simple language and avoid technical jargon
-
-## UDAS Troubleshooting Framework:
-
-### 🧑‍💼 USER LAYER (Check user-related factors first)
-Rule out: User error, permissions, training gaps, workflow issues
-Key Questions:
-- "When did this issue first start happening?"
-- "Are other users experiencing the same problem?"
-- "Have you tried this process before successfully?"
-- "What's different about how you're doing it now vs. before?"
-- "Do you have the right permissions for this task?"
-
-### 📊 DATA LAYER (Check data integrity and conflicts)
-Rule out: Corrupted data, duplicates, missing entries, data conflicts
-Key Questions:
-- "Are you seeing any duplicate entries?"
-- "When was the last time this data was working correctly?"
-- "Have you recently imported or bulk-updated any data?"
-- "Are there any missing transactions or entries?"
-- "Do the dates and amounts look correct?"
-
-### 💻 APPLICATION LAYER (Check QuickBooks Online application issues)
-Rule out: Feature bugs, updates, browser issues, cache problems
-Key Questions:
-- "Which browser are you using?"
-- "Have you tried clearing your browser cache and cookies?"
-- "Does this happen in an incognito/private browsing window?"
-- "Have you tried a different browser?"
-- "Are you using any browser extensions that might interfere?"
-
-### 🖥️ SYSTEM LAYER (Check external system factors)
-Rule out: Internet connectivity, bank connections, third-party integrations
-Key Questions:
-- "Is your internet connection stable?"
-- "Are you having issues with other online applications?"
-- "Do you have any third-party apps connected to QuickBooks?"
-- "When did you last successfully connect to your bank?"
-- "Are you seeing any error messages or codes?"
-
-## Response Structure:
-1. Acknowledge the user's issue with empathy
-2. Ask ONE diagnostic question starting with User layer
-3. Explain why you're asking (builds trust and education)
-4. Provide a quick tip if appropriate while waiting for their answer
-5. Move systematically through UDAS layers based on their responses
-
-## Solution Guidelines:
-- Always provide step-by-step instructions
-- Include screenshots/visual references when helpful
-- Warn about any potentially destructive actions
-- Offer multiple solutions when possible
-- Follow up to ensure the fix worked
-
-Your goal is to systematically rule out each UDAS layer until you identify the root cause, making the user feel supported and educated throughout the process.<|im_end|>
+You're a QuickBooks support specialist using UDAS troubleshooting (User→Data→Application→System). Be empathetic, ask ONE question at a time, start with User layer issues like permissions/workflow, then move through Data (duplicates/corruption), Application (browser/cache), System (connectivity). Provide step-by-step solutions.<|im_end|>
 <|im_start|>user
 ${userMessage}<|im_end|>
 <|im_start|>assistant
 `;
 
                 const response = await this.model.createCompletion(prompt, {
-                    nPredict: 150,
+                    nPredict: 80,         // Reduced from 150 for faster generation
                     sampling: {
-                        temp: 0.7,
-                        top_k: 40,
-                        top_p: 0.9
+                        temp: 0.5,        // Lower temp = more decisive = faster
+                        top_k: 20,        // Reduced from 40 = fewer options
+                        top_p: 0.8        // Reduced from 0.9 = faster sampling
                     },
-                    stopSequences: ['<|im_end|>', '<|im_start|>']
+                    stopSequences: ['<|im_end|>', '<|im_start|>', '\n\n', '**']
                 });
 
                 let text = this.cleanResponse(response);
                 
                 if (text.length > 15 && !this.isGenericResponse(text)) {
                     console.log('✅ SmolLM2 response generated successfully');
+                    
+                    // Cache the successful response for future use
+                    this.cacheResponse(cacheKey, text);
+                    
                     return {
                         success: true,
                         message: text,
@@ -231,6 +192,24 @@ ${userMessage}<|im_end|>
         }
 
         return text;
+    }
+
+    // Cache management for speed optimization
+    normalizeMessage(message) {
+        return message.toLowerCase()
+                     .replace(/[^\w\s]/g, '')
+                     .replace(/\s+/g, ' ')
+                     .trim()
+                     .substring(0, 100); // Limit key length
+    }
+
+    cacheResponse(key, response) {
+        // Manage cache size
+        if (this.responseCache.size >= this.maxCacheSize) {
+            const firstKey = this.responseCache.keys().next().value;
+            this.responseCache.delete(firstKey);
+        }
+        this.responseCache.set(key, response);
     }
 
     isGenericResponse(text) {
