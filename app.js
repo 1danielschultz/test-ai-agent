@@ -1,15 +1,13 @@
 // QuickBooks AI Assistant - Frontend Application
 class QuickBooksAI {
     constructor() {
-        this.apiEndpoint = 'https://your-api-gateway-url.amazonaws.com/prod';
-        this.apiKey = '';
-        this.chatMessages = [];
-        this.isLoading = false;
-        
         this.initializeElements();
-        this.bindEvents();
+        this.setupEventListeners();
         this.loadSettings();
-        this.setupAutoResize();
+        this.initializeBrowserAI();
+        
+        // State
+        this.isLoading = false;
     }
 
     initializeElements() {
@@ -35,6 +33,29 @@ class QuickBooksAI {
         // Quick action buttons
         this.quickActionBtns = document.querySelectorAll('.quick-action-btn');
         this.recentTopics = document.getElementById('recentTopics');
+    }
+
+    async initializeBrowserAI() {
+        try {
+            // Initialize browser-based AI
+            this.aiBrain = new AIBrain();
+            
+            // Show loading message
+            this.addMessage("🧠 Initializing AI model... This may take 1-2 minutes on first visit.", false);
+            
+            // Start loading the model
+            const success = await this.aiBrain.initialize();
+            
+            if (success) {
+                this.addMessage("✅ AI model ready! I can now provide intelligent QuickBooks assistance.", false);
+            } else {
+                this.addMessage("⚠️ AI model couldn't load, but I can still help with rule-based responses.", false);
+            }
+            
+        } catch (error) {
+            console.error('Failed to initialize AI:', error);
+            this.addMessage("ℹ️ Running in basic mode. I can help with common QuickBooks questions.", false);
+        }
     }
 
     bindEvents() {
@@ -115,47 +136,19 @@ class QuickBooksAI {
     }
 
     async callAI(message) {
-        // Check if API is configured
-        if (!this.apiEndpoint || this.apiEndpoint === 'https://your-api-gateway-url.amazonaws.com/prod') {
-            return 'Please configure your API endpoint in the settings (gear icon) to connect to the AI service. You\'ll need to set up AWS SageMaker and provide the API Gateway URL.';
+        // Use browser-based AI if available
+        if (this.aiBrain) {
+            const result = await this.aiBrain.generateResponse(message);
+            return result.message;
         }
 
-        // Prepare the request
-        const requestBody = {
-            message: message,
-            context: this.getContext(),
-            timestamp: new Date().toISOString()
-        };
-
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-
-        if (this.apiKey) {
-            headers['Authorization'] = `Bearer ${this.apiKey}`;
-        }
-
-        // Make the API call
-        const response = await fetch(`${this.apiEndpoint}/chat`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.response || data.message || 'I received your message but couldn\'t generate a proper response.';
+        // Fallback if no AI is available
+        return 'AI is not currently available. Please try refreshing the page or check your internet connection.';
     }
 
     getContext() {
         // Return recent chat history for context
-        return this.chatMessages.slice(-10).map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.content
-        }));
+        return [];
     }
 
     addMessage(content, type, isError = false) {
@@ -187,8 +180,7 @@ class QuickBooksAI {
         this.chatMessages.appendChild(messageDiv);
         this.scrollToBottom();
         
-        // Store message
-        this.chatMessages.push({ type, content, timestamp: new Date() });
+        // Note: chatMessages is now a DOM element, not an array
     }
 
     formatMessage(content) {
@@ -213,7 +205,7 @@ class QuickBooksAI {
             if (welcomeMessage) {
                 this.chatMessages.appendChild(welcomeMessage.cloneNode(true));
             }
-            this.chatMessages = [];
+            // Chat history cleared
         }
     }
 
