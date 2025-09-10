@@ -37,18 +37,28 @@ class SmolLMBrain {
     }
 
     async loadLlamaCppWasm() {
-        // Use llamafile.js for GGUF model support
+        // Use wllama for GGUF model support
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/gh/Mozilla-Ocho/llamafile@main/llamafile/llamafile.js';
+        script.type = 'module';
+        script.textContent = `
+            import { Wllama } from 'https://esm.sh/@wllama/wllama@1.8.0';
+            import WasmFromCDN from 'https://esm.sh/@wllama/wllama@1.8.0/esm/wasm-from-cdn.js';
+            
+            window.WllamaClass = Wllama;
+            window.WasmFromCDN = WasmFromCDN;
+        `;
         
         return new Promise((resolve, reject) => {
             script.onload = () => {
-                this.llamaCpp = window.llamafile || window.LlamaFile;
-                resolve();
+                // Wait a bit for the module to be available
+                setTimeout(() => {
+                    this.llamaCpp = window.WllamaClass;
+                    this.wasmConfig = window.WasmFromCDN;
+                    resolve();
+                }, 100);
             };
             script.onerror = () => {
-                // Fallback: mark as loaded but model will use rule-based responses
-                console.warn('Llamafile.js failed to load, using fallback');
+                console.warn('Wllama failed to load, using fallback');
                 resolve();
             };
             document.head.appendChild(script);
@@ -59,31 +69,32 @@ class SmolLMBrain {
         console.log('📥 Loading local SmolLM2 model (98MB)...');
         
         try {
-            // Load model from local file
-            const response = await fetch(this.modelPath);
-            if (!response.ok) {
-                throw new Error(`Failed to load local model: ${response.statusText}`);
-            }
-
-            const modelData = await response.arrayBuffer();
-            console.log(`✅ Model loaded: ${(modelData.byteLength / 1024 / 1024).toFixed(1)}MB`);
-            
-            if (!this.llamaCpp) {
-                console.warn('🔄 Llamafile not available, model loaded but will use rule-based fallback');
+            if (!this.llamaCpp || !this.wasmConfig) {
+                console.warn('🔄 Wllama not available, will use rule-based fallback');
                 return;
             }
             
-            console.log('🔄 Initializing model...');
+            console.log('🔄 Initializing Wllama...');
             
-            // Initialize the model with llamafile
-            this.model = await this.llamaCpp.load(modelData, {
-                n_ctx: 2048,
-                n_batch: 512,
-                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8)
+            // Initialize Wllama with WASM config from CDN
+            this.model = new this.llamaCpp(this.wasmConfig);
+            
+            // Load model from local file using loadModelFromUrl
+            console.log('🔄 Loading model with Wllama...');
+            await this.model.loadModelFromUrl(this.modelPath, {
+                progressCallback: ({ loaded, total }) => {
+                    const progress = Math.round((loaded / total) * 100);
+                    console.log(`📥 Model loading: ${progress}%`);
+                },
+                parallelDownloads: 3,
+                allowOffline: true
             });
 
+            console.log('✅ Model initialized successfully!');
+
         } catch (error) {
-            console.warn('Failed to load with llamafile, will use rule-based responses:', error);
+            console.warn('Failed to load with Wllama, will use rule-based responses:', error);
+            this.model = null;
             // Don't throw - just mark as "loaded" and use fallback responses
         }
     }
@@ -96,11 +107,11 @@ class SmolLMBrain {
             };
         }
 
-        // For now, use the enhanced rule-based system while WASM inference is experimental
-        // The local model is loaded and ready for when browser GGUF inference matures
+        // Try WASM inference with wllama if available
         try {
             if (this.model && this.llamaCpp) {
-                // Try WASM inference if available
+                console.log('🤖 Generating response with SmolLM2...');
+                
                 const prompt = `<|im_start|>system
 You are a helpful QuickBooks Online assistant. Provide accurate, step-by-step guidance for QuickBooks tasks. Keep responses concise and actionable.<|im_end|>
 <|im_start|>user
@@ -108,16 +119,20 @@ ${userMessage}<|im_end|>
 <|im_start|>assistant
 `;
 
-                const response = await this.model.generate(prompt, {
-                    max_tokens: 150,
-                    temperature: 0.7,
-                    top_p: 0.9,
-                    stop: ['<|im_end|>', '<|im_start|>']
+                const response = await this.model.createCompletion(prompt, {
+                    nPredict: 150,
+                    sampling: {
+                        temp: 0.7,
+                        top_k: 40,
+                        top_p: 0.9
+                    },
+                    stopSequences: ['<|im_end|>', '<|im_start|>']
                 });
 
-                let text = this.cleanResponse(response.text || response);
+                let text = this.cleanResponse(response);
                 
                 if (text.length > 15 && !this.isGenericResponse(text)) {
+                    console.log('✅ SmolLM2 response generated successfully');
                     return {
                         success: true,
                         message: text,
