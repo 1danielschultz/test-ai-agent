@@ -2,7 +2,8 @@
 class QuickBooksAI {
     constructor() {
         this.initializeElements();
-        this.setupEventListeners();
+        this.bindEvents();
+        this.setupAutoResize();
         this.loadSettings();
         this.initializeBrowserAI();
         
@@ -308,30 +309,6 @@ class QuickBooksAI {
     handleAttachment() {
         // Placeholder for file attachment functionality
         alert('File attachment feature coming soon! For now, you can describe your QuickBooks screenshots or error messages in text.');
-    }
-
-    // Utility method to simulate AI responses for demo purposes
-    async simulateResponse(message) {
-        // This is a fallback for demo purposes when API is not configured
-        const responses = {
-            'bank': 'To connect your bank account to QuickBooks Online:\n\n1. Go to Banking > Overview\n2. Click "Connect account"\n3. Search for your bank\n4. Enter your online banking credentials\n5. Select the accounts to connect\n\nIf you\'re having trouble, make sure your bank supports QuickBooks integration and your credentials are correct.',
-            
-            'sync': 'Bank sync errors can be resolved by:\n\n1. Go to Banking > Overview\n2. Click the gear icon next to your bank account\n3. Select "Update"\n4. Re-enter your banking credentials if prompted\n5. Wait for the sync to complete\n\nIf the error persists, try disconnecting and reconnecting your bank account.',
-            
-            'report': 'To generate a Profit and Loss report:\n\n1. Go to Reports in the left menu\n2. Search for "Profit and Loss"\n3. Select "Profit and Loss" report\n4. Choose your date range\n5. Click "Display" to generate\n6. You can customize, export, or save the report\n\nThe P&L shows your income and expenses for the selected period.',
-            
-            'payroll': 'Setting up payroll in QuickBooks Online:\n\n1. Go to Payroll > Overview\n2. Click "Get started" if not already set up\n3. Add your employees and their details\n4. Set up pay schedules and rates\n5. Configure tax settings\n6. Run your first payroll\n\nNote: Payroll is a premium feature and requires a subscription upgrade.'
-        };
-
-        // Simple keyword matching for demo
-        const lowerMessage = message.toLowerCase();
-        for (const [keyword, response] of Object.entries(responses)) {
-            if (lowerMessage.includes(keyword)) {
-                return response;
-            }
-        }
-
-        return 'I understand you need help with QuickBooks Online. While I\'m designed to provide comprehensive assistance, I need to be connected to the AI service to give you the most accurate and detailed help. Please configure the API settings to unlock my full capabilities.\n\nIn the meantime, you can check the helpful resources in the sidebar or describe your specific issue in more detail.';
     }
 }
 
