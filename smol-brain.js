@@ -40,18 +40,18 @@ class SmolLMBrain {
         console.log('🔄 Loading Wllama directly...');
         
         try {
-            // Direct dynamic import approach
-            const wllamaModule = await import('https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/index.js');
+            // Use latest wllama with SmolLM2 support
+            const wllamaModule = await import('https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/index.js');
             
             this.llamaCpp = wllamaModule.Wllama;
             
-            // Complete WASM config for CDN usage
+            // Complete WASM config for latest version
             this.wasmConfig = {
-                'single-thread/wllama.js': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/single-thread/wllama.js',
-                'single-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/single-thread/wllama.wasm',
-                'multi-thread/wllama.js': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.js',
-                'multi-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.wasm',
-                'multi-thread/wllama.worker.mjs': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.worker.mjs',
+                'single-thread/wllama.js': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/single-thread/wllama.js',
+                'single-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/single-thread/wllama.wasm',
+                'multi-thread/wllama.js': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/multi-thread/wllama.js',
+                'multi-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/multi-thread/wllama.wasm',
+                'multi-thread/wllama.worker.mjs': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.5/esm/multi-thread/wllama.worker.mjs',
             };
             
             console.log('✅ Wllama loaded successfully');
