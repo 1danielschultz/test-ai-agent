@@ -10,21 +10,20 @@
     <!-- SmolLM2-135M Brain -->
     <script src="smol-brain.js"></script>
 </head>
-<body>
-    <div class="container">
+<body class="dark-mode">
+    <div class="app-container">
         <!-- Header -->
-        <header class="header">
+        <header class="app-header">
             <div class="header-content">
                 <div class="logo">
                     <i class="fas fa-robot"></i>
-                    <h1>QuickBooks AI Assistant</h1>
+                    <span>QuickBooks AI</span>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-secondary" id="clearChat">
+                    <button class="btn-icon" id="clearChat" title="Clear Chat">
                         <i class="fas fa-trash"></i>
-                        Clear Chat
                     </button>
-                    <button class="btn-secondary" id="settingsBtn">
+                    <button class="btn-icon" id="settingsBtn" title="Settings">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
@@ -32,126 +31,57 @@
         </header>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <!-- Chat Container -->
+        <main class="chat-main">
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
                     <!-- Welcome Message -->
-                    <div class="message bot-message">
-                        <div class="message-avatar">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-text">
-                                <h3>Welcome to QuickBooks AI Assistant! 🤖✨</h3>
-                                <p>I'm your intelligent QuickBooks companion, powered by advanced AI and specialized knowledge. I can help you with:</p>
-                                <div class="feature-grid">
-                                    <div class="feature-item">
-                                        <i class="fas fa-university"></i>
-                                        <span>Banking & Transactions</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-chart-line"></i>
-                                        <span>Reports & Analytics</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-users"></i>
-                                        <span>Payroll & Tax</span>
-                                    </div>
-                                    <div class="feature-item">
-                                        <i class="fas fa-cogs"></i>
-                                        <span>Setup & Integration</span>
-                                    </div>
-                                </div>
-                                <p>💡 <strong>Try the quick actions below or type your question!</strong></p>
+                    <div class="welcome-section">
+                        <div class="welcome-content">
+                            <div class="welcome-header">
+                                <i class="fas fa-robot"></i>
+                                <h2>QuickBooks AI Assistant</h2>
+                            </div>
+                            <p class="welcome-subtitle">How can I help you with QuickBooks today?</p>
+                            
+                            <!-- Quick Actions -->
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" data-message="How do I connect my bank account to QuickBooks Online?">
+                                    <i class="fas fa-university"></i>
+                                    <span>Connect Bank Account</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="How do I generate a profit and loss report?">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Generate Reports</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="I need help with payroll setup in QuickBooks Online.">
+                                    <i class="fas fa-users"></i>
+                                    <span>Payroll Setup</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="I'm getting a sync error with my bank transactions. How do I fix this?">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Fix Sync Issues</span>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Quick Actions -->
-                <div class="quick-actions">
-                    <h4>Quick Help:</h4>
-                    <div class="quick-action-buttons">
-                        <button class="quick-action-btn" data-message="How do I connect my bank account to QuickBooks Online?">
-                            <i class="fas fa-university"></i>
-                            Bank Connection
-                        </button>
-                        <button class="quick-action-btn" data-message="I'm getting a sync error with my bank transactions. How do I fix this?">
-                            <i class="fas fa-sync-alt"></i>
-                            Sync Issues
-                        </button>
-                        <button class="quick-action-btn" data-message="How do I generate a profit and loss report?">
-                            <i class="fas fa-chart-line"></i>
-                            Reports
-                        </button>
-                        <button class="quick-action-btn" data-message="I need help with payroll setup in QuickBooks Online.">
-                            <i class="fas fa-users"></i>
-                            Payroll
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Input Area -->
+            </div>
+            
+            <!-- Input Area -->
+            <div class="input-section">
                 <div class="input-container">
                     <div class="input-wrapper">
                         <textarea 
                             id="messageInput" 
-                            placeholder="Ask me anything about QuickBooks... ✨"
+                            placeholder="Message QuickBooks AI..."
                             rows="1"
                         ></textarea>
-                        <div class="input-actions">
-                            <button id="attachBtn" class="btn-icon" title="Attach file">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                            <button id="sendBtn" class="btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="input-footer">
-                        <small>Press Shift+Enter for new line, Enter to send</small>
+                        <button id="sendBtn" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="sidebar-content">
-                    <h3>Recent Topics</h3>
-                    <div class="recent-topics" id="recentTopics">
-                        <div class="topic-item">
-                            <i class="fas fa-clock"></i>
-                            <span>Bank connection issues</span>
-                        </div>
-                        <div class="topic-item">
-                            <i class="fas fa-clock"></i>
-                            <span>Payroll configuration</span>
-                        </div>
-                    </div>
-
-                    <h3>Helpful Resources</h3>
-                    <div class="resources">
-                        <a href="https://quickbooks.intuit.com/learn-support/" target="_blank" class="resource-link">
-                            <i class="fas fa-external-link-alt"></i>
-                            QuickBooks Support
-                        </a>
-                        <a href="https://quickbooks.intuit.com/app/help" target="_blank" class="resource-link">
-                            <i class="fas fa-question-circle"></i>
-                            Help Center
-                        </a>
-                        <a href="https://community.intuit.com/browse/quickbooks-online" target="_blank" class="resource-link">
-                            <i class="fas fa-users"></i>
-                            Community Forum
-                        </a>
-                    </div>
-
-                    <div class="status-indicator">
-                        <div class="status-dot online"></div>
-                        <span>AI Assistant Online</span>
-                    </div>
-                </div>
-            </aside>
         </main>
 
         <!-- Loading Overlay -->
@@ -179,7 +109,7 @@
                     </div>
                     <div class="setting-group">
                         <label>
-                            <input type="checkbox" id="darkMode"> Dark Mode
+                            <input type="checkbox" id="darkMode" checked> Dark Mode
                         </label>
                     </div>
                 </div>

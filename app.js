@@ -16,7 +16,6 @@ class QuickBooksAI {
         this.chatMessages = document.getElementById('chatMessages');
         this.messageInput = document.getElementById('messageInput');
         this.sendBtn = document.getElementById('sendBtn');
-        this.attachBtn = document.getElementById('attachBtn');
         this.clearChatBtn = document.getElementById('clearChat');
         
         // UI elements
@@ -27,13 +26,14 @@ class QuickBooksAI {
         this.saveSettingsBtn = document.getElementById('saveSettings');
         
         // Settings inputs
-        this.apiEndpointInput = document.getElementById('apiEndpoint');
-        this.apiKeyInput = document.getElementById('apiKey');
         this.darkModeToggle = document.getElementById('darkMode');
         
         // Quick action buttons
         this.quickActionBtns = document.querySelectorAll('.quick-action-btn');
-        this.recentTopics = document.getElementById('recentTopics');
+        
+        // Welcome section
+        this.welcomeSection = document.querySelector('.welcome-section');
+        this.hasStartedChat = false;
     }
 
     async initializeBrowserAI() {
@@ -41,21 +41,17 @@ class QuickBooksAI {
             // Try to initialize SmolLM2-135M-Instruct first
             this.aiBrain = new SmolLMBrain();
             
-            // Show loading message with model info
-            this.addMessage("🧠 Loading SmolLM2-135M-Instruct (95MB)... This provides much better AI responses than the previous model!", false);
-            
-            // Start loading the model
+            // Start loading the model silently
             const success = await this.aiBrain.initialize();
             
             if (success) {
                 const modelInfo = this.aiBrain.getModelInfo();
-                this.addMessage(`✅ SmolLM2 ready! Now running ${modelInfo.params} instruction-tuned model for superior QuickBooks assistance.`, false);
+                console.log(`✅ SmolLM2 ready! Running ${modelInfo.params} model`);
             } else {
                 // Fallback to rule-based system
                 console.log('Falling back to rule-based responses');
                 this.aiBrain = new FallbackBrain();
                 await this.aiBrain.initialize();
-                this.addMessage("⚠️ Advanced AI unavailable, using enhanced rule-based QuickBooks assistance.", false);
             }
             
         } catch (error) {
@@ -63,7 +59,6 @@ class QuickBooksAI {
             // Initialize fallback system
             this.aiBrain = new FallbackBrain();
             await this.aiBrain.initialize();
-            this.addMessage("ℹ️ Running in rule-based mode with comprehensive QuickBooks knowledge.", false);
         }
     }
 
@@ -76,8 +71,7 @@ class QuickBooksAI {
         this.quickActionBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const message = btn.getAttribute('data-message');
-                this.messageInput.value = message;
-                this.sendMessage();
+                this.startChat(message);
             });
         });
         
@@ -89,9 +83,6 @@ class QuickBooksAI {
         
         // Settings
         this.darkModeToggle.addEventListener('change', () => this.toggleDarkMode());
-        
-        // Attach button (placeholder)
-        this.attachBtn.addEventListener('click', () => this.handleAttachment());
         
         // Modal close on backdrop click
         this.settingsModal.addEventListener('click', (e) => {
@@ -115,9 +106,24 @@ class QuickBooksAI {
         }
     }
 
+    startChat(message) {
+        this.messageInput.value = message || this.messageInput.value.trim();
+        if (!this.hasStartedChat && this.welcomeSection) {
+            this.welcomeSection.style.display = 'none';
+            this.hasStartedChat = true;
+        }
+        this.sendMessage();
+    }
+
     async sendMessage() {
         const message = this.messageInput.value.trim();
         if (!message || this.isLoading) return;
+
+        // Hide welcome section if first message
+        if (!this.hasStartedChat && this.welcomeSection) {
+            this.welcomeSection.style.display = 'none';
+            this.hasStartedChat = true;
+        }
 
         // Clear input and add user message
         this.messageInput.value = '';
@@ -131,11 +137,10 @@ class QuickBooksAI {
             // Send to AI backend
             const response = await this.callAI(message);
             this.addMessage(response, 'bot');
-            this.addToRecentTopics(message);
         } catch (error) {
             console.error('Error calling AI:', error);
             this.addMessage(
-                'I apologize, but I\'m having trouble connecting to the AI service right now. Please check your settings and try again. If the problem persists, you can visit the QuickBooks support resources in the sidebar.',
+                'I apologize, but I\'m having trouble right now. Please try again.',
                 'bot',
                 true
             );
@@ -208,40 +213,53 @@ class QuickBooksAI {
 
     clearChat() {
         if (confirm('Are you sure you want to clear the chat history?')) {
-            // Keep only the welcome message
-            const welcomeMessage = this.chatMessages.querySelector('.message.bot-message');
-            this.chatMessages.innerHTML = '';
-            if (welcomeMessage) {
-                this.chatMessages.appendChild(welcomeMessage.cloneNode(true));
-            }
-            // Chat history cleared
+            // Clear all messages and show welcome section again
+            this.chatMessages.innerHTML = `
+                <div class="welcome-section">
+                    <div class="welcome-content">
+                        <div class="welcome-header">
+                            <i class="fas fa-robot"></i>
+                            <h2>QuickBooks AI Assistant</h2>
+                        </div>
+                        <p class="welcome-subtitle">How can I help you with QuickBooks today?</p>
+                        
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-message="How do I connect my bank account to QuickBooks Online?">
+                                <i class="fas fa-university"></i>
+                                <span>Connect Bank Account</span>
+                            </button>
+                            <button class="quick-action-btn" data-message="How do I generate a profit and loss report?">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Generate Reports</span>
+                            </button>
+                            <button class="quick-action-btn" data-message="I need help with payroll setup in QuickBooks Online.">
+                                <i class="fas fa-users"></i>
+                                <span>Payroll Setup</span>
+                            </button>
+                            <button class="quick-action-btn" data-message="I'm getting a sync error with my bank transactions. How do I fix this?">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Fix Sync Issues</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Re-bind quick action buttons
+            this.welcomeSection = document.querySelector('.welcome-section');
+            this.quickActionBtns = document.querySelectorAll('.quick-action-btn');
+            this.quickActionBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const message = btn.getAttribute('data-message');
+                    this.startChat(message);
+                });
+            });
+            
+            this.hasStartedChat = false;
         }
     }
 
-    addToRecentTopics(message) {
-        // Extract topic from message (simplified)
-        const topic = message.length > 50 ? message.substring(0, 47) + '...' : message;
-        
-        const topicItem = document.createElement('div');
-        topicItem.className = 'topic-item';
-        topicItem.innerHTML = `
-            <i class="fas fa-clock"></i>
-            <span>${this.escapeHtml(topic)}</span>
-        `;
-        
-        topicItem.addEventListener('click', () => {
-            this.messageInput.value = message;
-            this.messageInput.focus();
-        });
-        
-        // Add to top of recent topics
-        this.recentTopics.insertBefore(topicItem, this.recentTopics.firstChild);
-        
-        // Keep only 5 recent topics
-        while (this.recentTopics.children.length > 5) {
-            this.recentTopics.removeChild(this.recentTopics.lastChild);
-        }
-    }
+    // Removed recent topics functionality since sidebar is removed
 
     escapeHtml(text) {
         const div = document.createElement('div');
@@ -263,8 +281,6 @@ class QuickBooksAI {
 
     showSettings() {
         this.settingsModal.style.display = 'flex';
-        this.apiEndpointInput.value = this.apiEndpoint;
-        this.apiKeyInput.value = this.apiKey;
     }
 
     hideSettings() {
@@ -272,20 +288,12 @@ class QuickBooksAI {
     }
 
     saveSettings() {
-        this.apiEndpoint = this.apiEndpointInput.value.trim();
-        this.apiKey = this.apiKeyInput.value.trim();
-        
         // Save to localStorage
         localStorage.setItem('qb-ai-settings', JSON.stringify({
-            apiEndpoint: this.apiEndpoint,
-            apiKey: this.apiKey,
             darkMode: this.darkModeToggle.checked
         }));
         
         this.hideSettings();
-        
-        // Show confirmation
-        this.addMessage('Settings saved successfully!', 'bot');
     }
 
     loadSettings() {
@@ -293,31 +301,28 @@ class QuickBooksAI {
         if (settings) {
             try {
                 const parsed = JSON.parse(settings);
-                this.apiEndpoint = parsed.apiEndpoint || this.apiEndpoint;
-                this.apiKey = parsed.apiKey || '';
                 
-                if (parsed.darkMode) {
+                if (parsed.darkMode !== false) { // Default to dark mode
                     this.darkModeToggle.checked = true;
-                    this.toggleDarkMode();
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
+        } else {
+            // Default to dark mode for new users
+            this.darkModeToggle.checked = true;
         }
     }
 
     toggleDarkMode() {
         if (this.darkModeToggle.checked) {
-            document.documentElement.setAttribute('data-theme', 'dark');
+            document.body.classList.add('dark-mode');
         } else {
-            document.documentElement.removeAttribute('data-theme');
+            document.body.classList.remove('dark-mode');
         }
     }
 
-    handleAttachment() {
-        // Placeholder for file attachment functionality
-        alert('File attachment feature coming soon! For now, you can describe your QuickBooks screenshots or error messages in text.');
-    }
+    // Removed attachment functionality
 }
 
 // Initialize the application when DOM is loaded
