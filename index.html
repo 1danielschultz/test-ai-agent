@@ -11,6 +11,32 @@
     <script src="smol-brain.js"></script>
 </head>
 <body class="dark-mode">
+    <!-- Initial Loading Overlay -->
+    <div class="initial-loading" id="initialLoading">
+        <div class="loading-content">
+            <div class="loading-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h2>QuickBooks AI Assistant</h2>
+            <div class="loading-status">
+                <div class="loading-spinner-container">
+                    <div class="loading-spinner-dots">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+                <p class="loading-text" id="loadingText">Initializing AI...</p>
+                <div class="loading-progress" id="loadingProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">

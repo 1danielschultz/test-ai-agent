@@ -5,10 +5,13 @@ class QuickBooksAI {
         this.bindEvents();
         this.setupAutoResize();
         this.loadSettings();
-        this.initializeBrowserAI();
         
         // State
         this.isLoading = false;
+        this.isInitialized = false;
+        
+        // Initialize AI after a brief delay to show loading screen
+        setTimeout(() => this.initializeBrowserAI(), 500);
     }
 
     initializeElements() {
@@ -34,31 +37,95 @@ class QuickBooksAI {
         // Welcome section
         this.welcomeSection = document.querySelector('.welcome-section');
         this.hasStartedChat = false;
+        
+        // Loading elements
+        this.initialLoading = document.getElementById('initialLoading');
+        this.loadingText = document.getElementById('loadingText');
+        this.loadingProgress = document.getElementById('loadingProgress');
+        this.progressFill = document.getElementById('progressFill');
+        this.progressText = document.getElementById('progressText');
     }
 
     async initializeBrowserAI() {
         try {
+            this.updateLoadingStatus('Loading AI model...', 10);
+            
             // Try to initialize SmolLM2-135M-Instruct first
             this.aiBrain = new SmolLMBrain();
             
-            // Start loading the model silently
+            this.updateLoadingStatus('Initializing SmolLM2-135M-Instruct...', 30);
+            
+            // Set up progress callback for model loading
+            const originalInit = this.aiBrain.initialize.bind(this.aiBrain);
+            this.aiBrain.initialize = async () => {
+                return new Promise((resolve) => {
+                    // Show progress bar when model starts loading
+                    this.showLoadingProgress();
+                    
+                    // Override the progress callback in loadModel
+                    const originalLoadModel = this.aiBrain.loadModel.bind(this.aiBrain);
+                    this.aiBrain.loadModel = async function() {
+                        console.log('📥 Loading local SmolLM2 model (98MB)...');
+                        try {
+                            if (!this.llamaCpp || !this.wasmConfig) {
+                                console.warn('🔄 Wllama not available, will use rule-based fallback');
+                                return;
+                            }
+                            
+                            this.model = new this.llamaCpp(this.wasmConfig, {
+                                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8),
+                                n_ctx: 4096
+                            });
+                            
+                            await this.model.loadModelFromUrl(this.modelPath, {
+                                progressCallback: ({ loaded, total }) => {
+                                    const progress = Math.round((loaded / total) * 100);
+                                    const finalProgress = 40 + (progress * 0.5); // Map 0-100% to 40-90%
+                                    window.qbAI.updateLoadingProgress(finalProgress, `Loading model: ${progress}%`);
+                                },
+                                parallelDownloads: 3,
+                                allowOffline: true
+                            });
+                            
+                            console.log('✅ Model initialized successfully!');
+                        } catch (error) {
+                            console.warn('Failed to load with Wllama, will use rule-based responses:', error);
+                            this.model = null;
+                        }
+                    };
+                    
+                    originalInit().then(resolve);
+                });
+            };
+            
             const success = await this.aiBrain.initialize();
             
             if (success) {
                 const modelInfo = this.aiBrain.getModelInfo();
+                this.updateLoadingStatus('AI ready! Starting assistant...', 95);
                 console.log(`✅ SmolLM2 ready! Running ${modelInfo.params} model`);
             } else {
                 // Fallback to rule-based system
+                this.updateLoadingStatus('Loading enhanced assistant...', 80);
                 console.log('Falling back to rule-based responses');
                 this.aiBrain = new FallbackBrain();
                 await this.aiBrain.initialize();
             }
             
+            // Final completion
+            this.updateLoadingStatus('Ready!', 100);
+            setTimeout(() => this.hideInitialLoading(), 500);
+            
         } catch (error) {
             console.error('Failed to initialize SmolLM2:', error);
+            
             // Initialize fallback system
+            this.updateLoadingStatus('Loading backup system...', 70);
             this.aiBrain = new FallbackBrain();
             await this.aiBrain.initialize();
+            
+            this.updateLoadingStatus('Ready!', 100);
+            setTimeout(() => this.hideInitialLoading(), 500);
         }
     }
 
@@ -322,6 +389,47 @@ class QuickBooksAI {
         }
     }
 
+    // Loading screen methods
+    updateLoadingStatus(text, progress = null) {
+        if (this.loadingText) {
+            this.loadingText.textContent = text;
+        }
+        if (progress !== null) {
+            this.updateLoadingProgress(progress);
+        }
+    }
+    
+    showLoadingProgress() {
+        if (this.loadingProgress) {
+            this.loadingProgress.classList.add('visible');
+        }
+    }
+    
+    updateLoadingProgress(progress, text = null) {
+        if (this.progressFill) {
+            this.progressFill.style.width = `${Math.min(progress, 100)}%`;
+        }
+        if (this.progressText) {
+            this.progressText.textContent = `${Math.round(progress)}%`;
+        }
+        if (text && this.loadingText) {
+            this.loadingText.textContent = text;
+        }
+    }
+    
+    hideInitialLoading() {
+        this.isInitialized = true;
+        if (this.initialLoading) {
+            this.initialLoading.classList.add('hidden');
+            // Remove from DOM after transition
+            setTimeout(() => {
+                if (this.initialLoading && this.initialLoading.parentNode) {
+                    this.initialLoading.parentNode.removeChild(this.initialLoading);
+                }
+            }, 500);
+        }
+    }
+    
     // Removed attachment functionality
 }
 
