@@ -1,30 +1,11 @@
 {
-  "name": "quickbooks-ai-agent",
+  "name": "test-ai-agent",
   "version": "1.0.0",
-  "description": "AI-powered QuickBooks Online troubleshooting assistant",
-  "main": "frontend/index.html",
-  "scripts": {
-    "dev": "python -m http.server 8000 --directory frontend",
-    "build": "echo 'Build complete for GitHub Pages'",
-    "deploy": "gh-pages -d frontend",
-    "test": "echo 'No tests yet'"
-  },
+  "description": "QuickBooks AI Agent - Static Interface",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/quickbooks-ai-agent"
+    "url": "https://github.com/1danielschultz/test-ai-agent"
   },
-  "keywords": [
-    "ai",
-    "quickbooks",
-    "troubleshooting",
-    "rag",
-    "sagemaker",
-    "chatbot"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "devDependencies": {
-    "gh-pages": "^6.0.0"
-  },
-  "homepage": "https://your-username.github.io/quickbooks-ai-agent"
+  "homepage": "https://1danielschultz.github.io/test-ai-agent",
+  "license": "MIT"
 }
