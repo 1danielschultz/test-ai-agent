@@ -37,28 +37,40 @@ class SmolLMBrain {
     }
 
     async loadLlamaCppWasm() {
-        // Use wllama for GGUF model support
+        // Use jsdelivr CDN for wllama
         const script = document.createElement('script');
         script.type = 'module';
         script.textContent = `
-            import { Wllama } from 'https://esm.sh/@wllama/wllama@1.8.0';
-            import WasmFromCDN from 'https://esm.sh/@wllama/wllama@1.8.0/esm/wasm-from-cdn.js';
-            
-            window.WllamaClass = Wllama;
-            window.WasmFromCDN = WasmFromCDN;
+            try {
+                const { Wllama } = await import('https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/index.js');
+                
+                // WASM config for CDN usage
+                const CONFIG_PATHS = {
+                    'single-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/single-thread/wllama.wasm',
+                    'multi-thread/wllama.wasm': 'https://cdn.jsdelivr.net/npm/@wllama/wllama@1.8.0/esm/multi-thread/wllama.wasm',
+                };
+                
+                window.WllamaClass = Wllama;
+                window.WllamaConfig = CONFIG_PATHS;
+                console.log('✅ Wllama loaded from jsdelivr CDN');
+            } catch (error) {
+                console.warn('Wllama CDN failed:', error);
+                window.WllamaClass = null;
+                window.WllamaConfig = null;
+            }
         `;
         
         return new Promise((resolve, reject) => {
             script.onload = () => {
-                // Wait a bit for the module to be available
+                // Wait for the dynamic import to complete
                 setTimeout(() => {
                     this.llamaCpp = window.WllamaClass;
-                    this.wasmConfig = window.WasmFromCDN;
+                    this.wasmConfig = window.WllamaConfig;
                     resolve();
-                }, 100);
+                }, 200);
             };
             script.onerror = () => {
-                console.warn('Wllama failed to load, using fallback');
+                console.warn('Wllama script failed to load, using fallback');
                 resolve();
             };
             document.head.appendChild(script);
@@ -76,8 +88,10 @@ class SmolLMBrain {
             
             console.log('🔄 Initializing Wllama...');
             
-            // Initialize Wllama with WASM config from CDN
-            this.model = new this.llamaCpp(this.wasmConfig);
+            // Initialize Wllama with WASM config
+            this.model = new this.llamaCpp(this.wasmConfig, {
+                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8)
+            });
             
             // Load model from local file using loadModelFromUrl
             console.log('🔄 Loading model with Wllama...');
