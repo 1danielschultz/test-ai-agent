@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBooks AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h1>QuickBooks AI Assistant</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" id="clearChat">
+                        <i class="fas fa-trash"></i>
+                        Clear Chat
+                    </button>
+                    <button class="btn-secondary" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome Message -->
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                <h3>Welcome to QuickBooks AI Assistant! 👋</h3>
+                                <p>I'm here to help you troubleshoot QuickBooks Online issues. I have access to comprehensive QuickBooks documentation and can assist with:</p>
+                                <ul>
+                                    <li>Account setup and configuration</li>
+                                    <li>Banking and transactions</li>
+                                    <li>Reporting and analytics</li>
+                                    <li>Payroll and tax issues</li>
+                                    <li>Integration problems</li>
+                                    <li>Error resolution</li>
+                                </ul>
+                                <p>What QuickBooks issue can I help you with today?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h4>Quick Help:</h4>
+                    <div class="quick-action-buttons">
+                        <button class="quick-action-btn" data-message="How do I connect my bank account to QuickBooks Online?">
+                            <i class="fas fa-university"></i>
+                            Bank Connection
+                        </button>
+                        <button class="quick-action-btn" data-message="I'm getting a sync error with my bank transactions. How do I fix this?">
+                            <i class="fas fa-sync-alt"></i>
+                            Sync Issues
+                        </button>
+                        <button class="quick-action-btn" data-message="How do I generate a profit and loss report?">
+                            <i class="fas fa-chart-line"></i>
+                            Reports
+                        </button>
+                        <button class="quick-action-btn" data-message="I need help with payroll setup in QuickBooks Online.">
+                            <i class="fas fa-users"></i>
+                            Payroll
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Describe your QuickBooks issue or ask a question..."
+                            rows="1"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button id="attachBtn" class="btn-icon" title="Attach file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button id="sendBtn" class="btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-footer">
+                        <small>Press Shift+Enter for new line, Enter to send</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <h3>Recent Topics</h3>
+                    <div class="recent-topics" id="recentTopics">
+                        <div class="topic-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Bank connection issues</span>
+                        </div>
+                        <div class="topic-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Payroll configuration</span>
+                        </div>
+                    </div>
+
+                    <h3>Helpful Resources</h3>
+                    <div class="resources">
+                        <a href="https://quickbooks.intuit.com/learn-support/" target="_blank" class="resource-link">
+                            <i class="fas fa-external-link-alt"></i>
+                            QuickBooks Support
+                        </a>
+                        <a href="https://quickbooks.intuit.com/app/help" target="_blank" class="resource-link">
+                            <i class="fas fa-question-circle"></i>
+                            Help Center
+                        </a>
+                        <a href="https://community.intuit.com/browse/quickbooks-online" target="_blank" class="resource-link">
+                            <i class="fas fa-users"></i>
+                            Community Forum
+                        </a>
+                    </div>
+
+                    <div class="status-indicator">
+                        <div class="status-dot online"></div>
+                        <span>AI Assistant Online</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner">
+                <i class="fas fa-robot fa-spin"></i>
+                <p>Thinking...</p>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="btn-icon" id="closeSettings">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="apiEndpoint">API Endpoint:</label>
+                        <input type="url" id="apiEndpoint" value="https://your-api-gateway-url.amazonaws.com/prod">
+                    </div>
+                    <div class="setting-group">
+                        <label for="apiKey">API Key:</label>
+                        <input type="password" id="apiKey" placeholder="Enter your API key">
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="darkMode"> Dark Mode
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="saveSettings">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

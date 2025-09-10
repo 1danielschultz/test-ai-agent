@@ -1,0 +1,163 @@
+name: Deploy QuickBooks AI Agent
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Deploy frontend to GitHub Pages
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./frontend
+        cname: ${{ vars.CUSTOM_DOMAIN }}
+        
+  # Test RAG system
+  test-rag:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+        
+    - name: Install RAG dependencies
+      run: |
+        cd rag
+        pip install -r requirements.txt
+        
+    - name: Test knowledge base
+      run: |
+        cd rag
+        python -c "
+        from knowledge_base import QuickBooksRAG, create_quickbooks_knowledge_base
+        rag = QuickBooksRAG()
+        documents = create_quickbooks_knowledge_base()
+        rag.add_documents(documents)
+        results = rag.search('bank connection')
+        assert len(results) > 0, 'RAG search failed'
+        print(f'RAG test passed: {len(results)} results found')
+        "
+        
+  # Deploy backend to AWS Lambda
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: test-rag
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js for Serverless
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install Serverless Framework
+      run: npm install -g serverless
+      
+    - name: Install Serverless plugins
+      run: |
+        cd backend
+        npm init -y
+        npm install serverless-python-requirements
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+        
+    - name: Deploy to AWS Lambda
+      run: |
+        cd backend
+        serverless deploy --stage prod
+      env:
+        SAGEMAKER_ENDPOINT_NAME: ${{ vars.SAGEMAKER_ENDPOINT_NAME }}
+        RAG_SERVICE_URL: ${{ vars.RAG_SERVICE_URL }}
+        API_KEY: ${{ secrets.API_KEY }}
+        CORS_ORIGIN: ${{ vars.CORS_ORIGIN || '*' }}
+        
+  # Deploy SageMaker model (manual trigger)
+  deploy-sagemaker:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+        
+    - name: Install SageMaker dependencies
+      run: |
+        cd sagemaker
+        pip install -r requirements.txt
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+        
+    - name: Deploy SageMaker model
+      run: |
+        cd sagemaker
+        python model_deployment.py --action deploy --model-id ${{ vars.HUGGINGFACE_MODEL_ID || 'microsoft/DialoGPT-medium' }}
+
+# Manual workflow dispatch for SageMaker deployment
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform (deploy/delete)'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+        - deploy
+        - delete
+      model_id:
+        description: 'Hugging Face model ID'
+        required: false
+        default: 'microsoft/DialoGPT-medium'
+      endpoint_name:
+        description: 'SageMaker endpoint name (for delete action)'
+        required: false

@@ -1,0 +1,10 @@
+torch==2.0.1
+transformers==4.33.2
+boto3==1.28.85
+sagemaker==2.175.0
+accelerate==0.21.0
+sentencepiece==0.1.99
+requests==2.31.0
+numpy==1.24.3
+flask==2.3.3
+flask-cors==4.0.0
