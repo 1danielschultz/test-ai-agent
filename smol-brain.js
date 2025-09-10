@@ -76,9 +76,10 @@ class SmolLMBrain {
             
             console.log('🔄 Initializing Wllama...');
             
-            // Initialize Wllama with WASM config
+            // Initialize Wllama with WASM config and 4096 context window
             this.model = new this.llamaCpp(this.wasmConfig, {
-                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8)
+                n_threads: Math.min(navigator.hardwareConcurrency || 4, 8),
+                n_ctx: 4096  // Increased context window for longer conversations
             });
             
             // Load model from local file using loadModelFromUrl

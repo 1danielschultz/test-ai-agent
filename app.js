@@ -326,5 +326,5 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add some demo functionality for testing
     console.log('QuickBooks AI Assistant loaded successfully!');
-    console.log('Configure API settings to connect to AWS SageMaker backend.');
+    console.log('Local SmolLM2 AI brain initialized for offline inference.');
 });
