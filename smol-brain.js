@@ -62,12 +62,17 @@ class SmolLMBrain {
         
         return new Promise((resolve, reject) => {
             script.onload = () => {
+                console.log('🔄 Script loaded, waiting for module...');
                 // Wait for the dynamic import to complete
                 setTimeout(() => {
                     this.llamaCpp = window.WllamaClass;
                     this.wasmConfig = window.WllamaConfig;
+                    console.log('🔄 Wllama classes assigned:', {
+                        hasClass: !!this.llamaCpp,
+                        hasConfig: !!this.wasmConfig
+                    });
                     resolve();
-                }, 200);
+                }, 500); // Increased timeout
             };
             script.onerror = () => {
                 console.warn('Wllama script failed to load, using fallback');
