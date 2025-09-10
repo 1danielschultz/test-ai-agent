@@ -7,7 +7,7 @@ class SmolLMBrain {
         this.isReady = false;
         this.llamaCpp = null;
         this.model = null;
-        this.modelPath = './models/SmolLM2-135M-Instruct.Q4_1.gguf';
+        this.modelPath = new URL('./models/SmolLM2-135M-Instruct.Q4_1.gguf', window.location.href).href;
     }
 
     async initialize() {
@@ -66,6 +66,7 @@ class SmolLMBrain {
 
     async loadModel() {
         console.log('📥 Loading local SmolLM2 model (98MB)...');
+        console.log('🔗 Model URL:', this.modelPath);
         
         try {
             if (!this.llamaCpp || !this.wasmConfig) {
